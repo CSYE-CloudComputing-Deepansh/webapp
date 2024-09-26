@@ -1,8 +1,7 @@
 import Sequelize from 'sequelize';
 
 
-const sequelize = new Sequelize('postgres://postgres:password@localhost:5432/postgres')
-
+const sequelize = new Sequelize(process.env.DB_CONN_STRING+"//"+process.env.DB_USERNAME+":"+process.env.DB_PASSWORD+"@"+process.env.DB_INSTANCE+"/"+process.env.DB_NAME)
 try {
   await sequelize.authenticate();
   console.log('Connection has been established successfully.');

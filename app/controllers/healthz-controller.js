@@ -2,13 +2,13 @@ import sequelize from '../db.js';
 
 export const gethealthz = async (request, response) => {
   try {
-    if(request.body !== '{}'){
+    if (request.body && Object.keys(request.body).length > 0) {
       console.log("No body required");
       console.log(request.body.length);
       console.log(request.body);
-      response.status(403).set('Cache-Control', 'no-cache').send();
+      response.status(400).set('Cache-Control', 'no-cache').send();
     }
-    else{
+    else {
       await sequelize.authenticate();
       console.log('Connection has been established successfully.');
       response.status(200).set('Cache-Control', 'no-cache').send();
