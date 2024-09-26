@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon server.js"
+    "start": "nodemon server.js",
+    "build": "babel App server.js -d dist"
   },
   "author": "",
   "license": "ISC",
@@ -18,5 +19,9 @@
     "pg": "^8.13.0",
     "sequelize": "^6.37.3",
     "tedious": "^18.2.0"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.3"
   }
 }
