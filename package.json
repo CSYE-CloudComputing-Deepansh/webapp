@@ -9,7 +9,7 @@
   },
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "CSYE 6225 organizational repository",
   "dependencies": {
     "babel-plugin-rewire": "^1.2.0",
     "bcrypt": "^5.1.1",
