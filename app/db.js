@@ -1,10 +1,11 @@
-import Sequelize from 'sequelize';
+const Sequelize = require('sequelize');
 
-const sequelize = new Sequelize(process.env.DB_CONN_STRING+"//"+process.env.DB_USERNAME+":"+process.env.DB_PASSWORD+"@"+process.env.DB_INSTANCE+"/"+process.env.DB_NAME)
+//const sequelize = new Sequelize(process.env.DB_CONN_STRING + "//" + process.env.DB_USERNAME + ":" + process.env.DB_PASSWORD + "@" + process.env.DB_INSTANCE + "/" + process.env.DB_NAME)
 // try {
+const sequelize = new Sequelize("postgres://postgres:password@localhost:5432/postgres")
 //   await sequelize.authenticate();
 //   console.log('Connection has been established successfully.');
 // } catch (error) {
 //   console.error('Unable to connect to the database:', error);
 // }
-export default sequelize;
+module.exports = sequelize;

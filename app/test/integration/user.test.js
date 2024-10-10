@@ -1,75 +1,105 @@
-import { expect } from 'chai';
-import sinon from 'sinon';
+const chai = require('chai'); // Import Chai
+const chaiHttp = require('chai-http'); // Import Chai HTTP for HTTP requests
+const { expect } = chai; // Destructure expect from Chai
+const sinon = require('sinon'); // Import Sinon for stubbing
+const userService = require('../../services/user-service.js'); // Import userService directly
+const app = require('../../app.js'); // Import your Express app
 
-// The Babel plugin allows direct use of __Rewire__ without the need for 'rewire' import
-import * as userController from '../../controllers/user-controller.js';  // Assuming this is the correct path
-console.log(userController);
-describe('User Controller Tests', () => {
-  let findUserStub, saveUserStub, req, res, next;
+chai.use(chaiHttp);
+
+describe('POST /v1/user - User Creation', () => {
+  let findUserStub, saveUserStub;
 
   beforeEach(() => {
-    req = { body: {}, user: {} };
-    res = {
-      status: sinon.stub().returnsThis(),
-      json: sinon.stub().returnsThis(),
-      set: sinon.stub().returnsThis(),
-    };
-    next = sinon.stub();
+    console.log("Setting up stubs...");
 
-    // Use __Rewire__ to replace internal dependencies
-    findUserStub = sinon.stub();
-    saveUserStub = sinon.stub();
+    // Stub methods directly on the userService
+    findUserStub = sinon.stub(userService, 'findUser');
+    saveUserStub = sinon.stub(userService, 'saveUser');
 
-    userController.__Rewire__('findUser', findUserStub);
-    userController.__Rewire__('saveUser', saveUserStub);
+    console.log("Stubs set up.");
   });
 
   afterEach(() => {
-    // Restore Sinon stubs and reset rewired modules
-    sinon.restore();
-    userController.__ResetDependency__('findUser');
-    userController.__ResetDependency__('saveUser');
+    console.log("Restoring Sinon stubs...");
+    sinon.restore(); // Restore all stubs after each test
   });
 
-  it('should return 400 if required fields are missing', async () => {
-    req.body = { first_name: 'John', last_name: 'Doe' };  // Missing email and password
+  it('should return 400 if required fields are missing', (done) => {
+    console.log("Running test for missing fields...");
+    const incompleteUser = {
+      first_name: 'John',
+      email: 'john.doe@example.com', // Missing last_name and password
+    };
 
-    await userController.saveUser(req, res);
-
-    expect(res.status).to.have.been.calledWith(400);
-    expect(res.json).to.have.been.calledWith({ message: 'All fields needed' });
+    chai
+      .request(app)
+      .post('/v1/user')
+      .send(incompleteUser)
+      .end((err, res) => {
+        console.log("Test response received.");
+        expect(res).to.have.status(400);
+        expect(res.body).to.have.property('message', 'All fields needed');
+        done();
+      });
   });
 
-  it('should create a new user and return 201', async () => {
-    req.body = { first_name: 'John', last_name: 'Doe', email: 'john@example.com', password: 'password' };
+  it('should return 400 if the user already exists', (done) => {
+    console.log("Running test for existing user...");
+    const existingUser = {
+      id: 1,
+      first_name: 'John',
+      last_name: 'Doe',
+      email: 'john.doe@example.com',
+      password: 'hashedpassword',
+    };
 
-    // Simulate user does not exist
-    findUserStub.resolves(null);
+    // Stub findUser to return an existing user
+    findUserStub.resolves(existingUser);
 
-    // Simulate successful user creation
+    chai
+      .request(app)
+      .post('/v1/user')
+      .send(existingUser)
+      .end((err, res) => {
+        expect(res).to.have.status(400);
+        expect(res.body).to.have.property('message', 'User already exists');
+        done();
+      });
+  });
+
+  it('should create a new user and return 201 with basic auth token', (done) => {
+    console.log("Running test for user creation...");
+    const newUser = {
+      first_name: 'John',
+      last_name: 'Doe',
+      email: 'john.doe@example.com',
+      password: 'password123',
+    };
+
     const createdUser = {
       id: 1,
       first_name: 'John',
       last_name: 'Doe',
-      email: 'john@example.com',
+      email: 'john.doe@example.com',
       account_created: new Date(),
       account_updated: new Date(),
     };
-    saveUserStub.resolves(createdUser);
 
-    await userController.saveUser(req, res);
+    findUserStub.resolves(null); // Make the stub return no user
+    saveUserStub.resolves(createdUser); // Make the stub simulate successful user creation
 
-    expect(res.status).to.have.been.calledWith(201);
-    expect(res.set).to.have.been.calledWith('authorization');
-    expect(res.json).to.have.been.calledWith({
-      id: createdUser.id,
-      email: createdUser.email,
-      first_name: createdUser.first_name,
-      last_name: createdUser.last_name,
-      account_created: createdUser.account_created,
-      account_updated: createdUser.account_updated,
-    });
+    chai
+      .request(app)
+      .post('/v1/user')
+      .send(newUser)
+      .end((err, res) => {
+        expect(res).to.have.status(201);
+        expect(res).to.have.header('authorization');
+        expect(res.body).to.be.an('object');
+        expect(res.body).to.have.property('id', createdUser.id);
+        expect(res.body).to.have.property('email', createdUser.email);
+        done();
+      });
   });
-
-  // Additional tests...
 });

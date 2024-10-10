@@ -1,28 +1,26 @@
-import express from "express";
-import registerRouter from "../app/routes/index.js"
-import sequelize from "./db.js"
-import User from "./Model/user-model.js"
-// import registerRouter from "./routes/index.js";
+const express = require("express");
+const registerRouter = require("../app/routes/index.js");
+const sequelize = require("./db.js");
+const User = require("./Model/user-model.js");
 
-sequelize.sync({alter: true}).then(() => {
-  console.log('Database & tables are created');
-})
-.catch((err) => {
-  console.log("Error", err);
-})
+const app = express(); // Create an Express app instance
 
-// receives an object of app and initializes it
-const initialize = (app) => {
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: true }));
-  // Serve uploaded images statically
-  app.use('/', express.static('public'));
+// Sync database and create tables
+sequelize.sync({ alter: true })
+  .then(() => {
+    console.log('Database & tables are created');
+  })
+  .catch((err) => {
+    console.log("Error", err);
+  });
 
+// Initialize middleware, routes, etc.
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use('/', express.static('public'));
 
+// Initialize routes
+registerRouter(app);
 
-  // Initialize Routes
-  registerRouter(app);
-
-};
-
-export default initialize;
+// Export the app instance directly
+module.exports = app;

@@ -1,9 +1,10 @@
-import { setDataResponse, setDataErrorResponse } from '../utility/response-handler.js'
-import * as userService from "../services/user-service.js"
-import { request, response } from 'express';
-import bCrypt from 'bcrypt';
+const { setDataResponse, setDataErrorResponse } = require('../utility/response-handler.js');
+const userService = require("../services/user-service.js");
+const { request, response } = require('express');
+const bCrypt = require('bcrypt');
 
-export const saveUser = async (request, response) => {
+
+const saveUser = async (request, response) => {
     try {
         const { first_name, last_name, email, password } = request.body;
 
@@ -42,7 +43,7 @@ export const saveUser = async (request, response) => {
     }
 }
 
-export const getUser = async (request, response) => {
+const getUser = async (request, response) => {
     try {
 
         const user = request.user;
@@ -55,7 +56,7 @@ export const getUser = async (request, response) => {
     }
 }
 
-export const updateUser = async (request, response) => {
+const updateUser = async (request, response) => {
     try {
         const user = request.user; // Assuming the user is attached by the authentication middleware
 
@@ -99,7 +100,7 @@ export const updateUser = async (request, response) => {
 
 
       // Respond with the updated user details (excluding sensitive information like password)
-      return response.status(200).set('authorization', basicAuthToken).set('Cache-Control', 'no-cache')
+      return response.status(200).set('authorization', basicAuthToken).set('Cache-Control', 'no-cache').json({message:"done"})
     //   return response.status(200).set('authorization', basicAuthToken).json({
     //     message: 'User updated successfully',
     //     user: {
@@ -120,3 +121,5 @@ const generateBasicAuthToken = (email, password) => {
     const base64Token = Buffer.from(credentials).toString('base64');
     return `Basic ${base64Token}`;
 }
+
+module.exports={saveUser, updateUser, getUser}

@@ -1,7 +1,8 @@
-import Users from "../Model/user-model.js";
-import { findUser, verifyPassword } from "../services/user-service.js";
+const Users = require("../Model/user-model.js");
+const { findUser, verifyPassword } = require("../services/user-service.js");
 
-export const basicAuth = async (request, response, next) => {
+
+ const basicAuth = async (request, response, next) => {
     const authHeader = request.get('authorization');
     console.log(request.header)
     if (!authHeader || !authHeader.startsWith('Basic ')) {
@@ -35,3 +36,5 @@ export const basicAuth = async (request, response, next) => {
         return response.status(500).json({ message: "Error verifying credentials", error: error.message });
     }
 }
+
+module.exports = {basicAuth}

@@ -1,5 +1,5 @@
-import express from "express";
-import * as healthzController from "../controllers/healthz-controller.js"
+const express =  require("express") ;
+const healthzController = require("../controllers/healthz-controller.js");
 
 const healthzRouter = express.Router();
 healthzRouter
@@ -9,4 +9,4 @@ healthzRouter
     response.status(405).set('Cache-Control', 'no-cache').send();
   });
 
-export default healthzRouter;
+module.exports = healthzRouter;

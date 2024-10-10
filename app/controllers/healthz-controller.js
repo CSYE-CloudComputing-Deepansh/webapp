@@ -1,6 +1,6 @@
-import sequelize from '../db.js';
+const sequelize = require('../db.js');
 
-export const gethealthz = async (request, response) => {
+const gethealthz = async (request, response) => {
   try {
     if (request.body && Object.keys(request.body).length > 0) {
       console.log("No body required");
@@ -18,3 +18,5 @@ export const gethealthz = async (request, response) => {
     response.status(503).set('Cache-Control', 'no-cache').send();
   }
 }
+
+module.exports = { gethealthz };
