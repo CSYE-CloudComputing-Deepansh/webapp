@@ -1,7 +1,8 @@
-import express from "express";
-import * as userController from "../controllers/user-controller.js"
-import user from "../Model/user-model.js";
-import {basicAuth} from "../utility/authChecker.js";
+const express = require("express");
+const userController = require("../controllers/user-controller.js");
+const user = require("../Model/user-model.js");
+const { basicAuth } = require("../utility/authChecker.js");
+
 
 const userRouter = express.Router();
 userRouter
@@ -26,4 +27,4 @@ userRouter
     response.status(405).set('Cache-Control', 'no-cache').send();
   });
 
-export default userRouter;
+module.exports= userRouter;

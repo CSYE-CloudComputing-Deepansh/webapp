@@ -1,7 +1,8 @@
-import Users from '../Model/user-model.js';
-import bCrypt from 'bcrypt';
+const Users = require('../Model/user-model.js');
+const bCrypt = require('bcrypt');
 
-export const saveUser = async (userData) => {
+
+const saveUser = async (userData) => {
     console.log("service")
     try {
         const user = await Users.create(userData);
@@ -11,7 +12,7 @@ export const saveUser = async (userData) => {
     }
 };
 
-export const findUser = async (email) => {
+const findUser = async (email) => {
     try {
         const user = await Users.findOne({ where: { email } });
         return user;
@@ -21,7 +22,7 @@ export const findUser = async (email) => {
     }
 }
 
-export const verifyPassword = async (plainPassword, hashedPassword) => {
+const verifyPassword = async (plainPassword, hashedPassword) => {
     try{
         const isMatch = await bCrypt.compare(plainPassword, hashedPassword);
         return isMatch;
@@ -30,3 +31,5 @@ export const verifyPassword = async (plainPassword, hashedPassword) => {
         throw error;
     }
 }
+
+module.exports ={saveUser, verifyPassword, findUser}
