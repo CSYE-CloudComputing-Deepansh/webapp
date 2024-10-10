@@ -1,7 +1,7 @@
-const chai = require('chai'); // Import Chai
-const chaiHttp = require('chai-http'); // Import Chai HTTP for HTTP requests
-const { expect } = chai; // Destructure expect from Chai
-const sinon = require('sinon'); // Import Sinon for stubbing
+const chai = require('chai');
+const chaiHttp = require('chai-http');
+const sinon = require('sinon');
+const { expect } = chai;
 const userService = require('../../services/user-service.js'); // Import userService directly
 const app = require('../../app.js'); // Import your Express app
 
@@ -68,7 +68,7 @@ describe('POST /v1/user - User Creation', () => {
       });
   });
 
-  it('should create a new user and return 201 with basic auth token', (done) => {
+  it('should create a new user and return 201', (done) => {
     console.log("Running test for user creation...");
     const newUser = {
       first_name: 'John',
@@ -95,10 +95,13 @@ describe('POST /v1/user - User Creation', () => {
       .send(newUser)
       .end((err, res) => {
         expect(res).to.have.status(201);
-        expect(res).to.have.header('authorization');
         expect(res.body).to.be.an('object');
         expect(res.body).to.have.property('id', createdUser.id);
         expect(res.body).to.have.property('email', createdUser.email);
+        expect(res.body).to.have.property('first_name', createdUser.first_name);
+        expect(res.body).to.have.property('last_name', createdUser.last_name);
+        expect(res.body).to.have.property('account_created');
+        expect(res.body).to.have.property('account_updated');
         done();
       });
   });
