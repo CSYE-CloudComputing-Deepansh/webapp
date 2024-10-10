@@ -11,4 +11,4 @@ To run the app, enter the following commands
 `npm start`
 
 to run the tests, enter the following command
-`npm test`
+`npm test` 
