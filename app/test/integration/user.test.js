@@ -15,7 +15,7 @@ describe('POST /v1/user - User Creation', () => {
 
     // Stub methods directly on the userService
     findUserStub = sinon.stub(userService, 'findUser');
-    saveUserStub = sinon.stub(userService, 'saveUser');
+    saveUserStub = sinon.stub(userService, 'saveUser'); 
 
     console.log("Stubs set up.");
   });
