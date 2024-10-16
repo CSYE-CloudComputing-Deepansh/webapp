@@ -94,7 +94,7 @@ describe('POST /v1/user - User Creation', () => {
       .post('/v1/user')
       .send(newUser)
       .end((err, res) => {
-        expect(res).to.have.status(201);
+        expect(res).to.have.status(205);
         expect(res.body).to.be.an('object');
         expect(res.body).to.have.property('id', createdUser.id);
         expect(res.body).to.have.property('email', createdUser.email);
