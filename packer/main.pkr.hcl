@@ -1,6 +1,6 @@
 variable "artifact_path" {
   type    = string
-  default = "./build-artifacts/app-package.zip"  # Point to the zip file specifically
+  default = "./build-artifacts/app-package.zip" # Point to the zip file specifically
 }
 
 variable "aws_region" {
@@ -9,18 +9,18 @@ variable "aws_region" {
 }
 
 variable "DB_NAME" {
-  type = string
+  type    = string
   default = "postgres"
 }
 
 variable "DB_USERNAME" {
-  type = string
-   default = "postgres"
+  type    = string
+  default = "postgres"
 }
 
 variable "DB_PASSWORD" {
-  type = string
-   default = "postgres"
+  type    = string
+  default = "postgres"
 }
 
 packer {
@@ -33,11 +33,11 @@ packer {
 }
 
 source "amazon-ebs" "ubuntu_ami" {
-  region                 = var.aws_region
-  source_ami             = "ami-0866a3c8686eaeeba"
-  instance_type          = "t2.small"
-  ami_name               = "assignment4_ami_Deepansh_${formatdate("YYYY_MM_DD", timestamp())}"
-  ssh_username           = "ubuntu"
+  region        = var.aws_region
+  source_ami    = "ami-0866a3c8686eaeeba"
+  instance_type = "t2.small"
+  ami_name      = "assignment4_ami_Deepansh_${formatdate("YYYY_MM_DD", timestamp())}"
+  ssh_username  = "ubuntu"
   tags = {
     Name        = "custom-ubuntu-24.04-node-postgres"
     Environment = "dev"
@@ -66,17 +66,12 @@ build {
     ]
   }
 
-    # Configure PostgreSQL with environment variable credentials
+  # Configure PostgreSQL with environment variable credentials
   provisioner "shell" {
     inline = [
-      "sudo -u postgres psql -c \"CREATE DATABASE ${DB_NAME};\"",
-      "sudo -u postgres psql -c \"CREATE USER ${DB_USERNAME} WITH PASSWORD '${DB_PASSWORD}';\"",
-      "sudo -u postgres psql -c \"GRANT ALL PRIVILEGES ON DATABASE ${DB_NAME} TO ${DB_USERNAME};\""
-    ]
-    environment_vars = [
-      "DB_NAME=${DB_NAME}",
-      "DB_USERNAME=${DB_USERNAME}",
-      "DB_PASSWORD=${DB_PASSWORD}"
+      "sudo -u postgres psql -c \"CREATE DATABASE ${var.DB_NAME};\"",
+      "sudo -u postgres psql -c \"CREATE USER ${var.DB_USERNAME} WITH PASSWORD '${var.DB_PASSWORD}';\"",
+      "sudo -u postgres psql -c \"GRANT ALL PRIVILEGES ON DATABASE ${var.DB_NAME} TO ${var.DB_USERNAME};\""
     ]
   }
 
@@ -106,8 +101,8 @@ build {
   provisioner "shell" {
     inline = [
       "cd /opt/webapp",
-      "sudo unzip app-package.zip -d /opt/webapp",  # Extract contents of the zip to /opt/webapp
-      "rm /opt/webapp/app-package.zip"  # Remove zip file after extraction
+      "sudo unzip app-package.zip -d /opt/webapp", # Extract contents of the zip to /opt/webapp
+      "rm /opt/webapp/app-package.zip"             # Remove zip file after extraction
     ]
   }
 
@@ -125,7 +120,7 @@ build {
       "echo '[Unit]' | sudo tee /etc/systemd/system/nodeapp.service",
       "echo 'Description=Node.js Application' | sudo tee -a /etc/systemd/system/nodeapp.service",
       "echo '[Service]' | sudo tee -a /etc/systemd/system/nodeapp.service",
-      "echo 'ExecStart=/usr/bin/node /opt/webapp/server.js' | sudo tee -a /etc/systemd/system/nodeapp.service",  # Updated path
+      "echo 'ExecStart=/usr/bin/node /opt/webapp/server.js' | sudo tee -a /etc/systemd/system/nodeapp.service", # Updated path
       "echo 'Restart=always' | sudo tee -a /etc/systemd/system/nodeapp.service",
       "echo '[Install]' | sudo tee -a /etc/systemd/system/nodeapp.service",
       "echo 'WantedBy=multi-user.target' | sudo tee -a /etc/systemd/system/nodeapp.service",
