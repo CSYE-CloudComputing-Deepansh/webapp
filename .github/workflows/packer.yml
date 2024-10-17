@@ -6,8 +6,9 @@ on:
   push:
     branches:
       - '*'
+
 jobs:
-  test_and_build:
+  test_and_build_and_deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -30,13 +31,6 @@ jobs:
           mkdir -p build-artifacts
           cp -r dist/* build-artifacts/
 
-  build_custom_ami:
-    needs: test_and_build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -48,22 +42,12 @@ jobs:
         uses: hashicorp/setup-packer@main
         id: setup
         with: 
-            version: 1.11.2
+          version: 1.11.2
                    
       - name: Run `packer init`
         id: init
         run: "packer init ./packer/main.pkr.hcl"
      
-    #   - name: Run `packer validate`
-    #     id: validate
-    #     run: "packer validate ./packer/main.pkr.hcl"
-
-    #   - name: Install Packer
-    #     run: |
-    #       curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
-    #       sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
-    #       sudo apt-get update && sudo apt-get install -y packer
-
       - name: Build custom AMI with Packer
         env:
           AWS_REGION:  ${{ vars.AWS_REGION }}
