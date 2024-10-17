@@ -18,20 +18,20 @@ packer {
 }
 
 source "amazon-ebs" "ubuntu_ami" {
-  region                 = var.aws_region
-  profile                = "dev" # Specify your AWS CLI profile, if needed
-  source_ami_filter {
-    filters = {
-      name                = "ubuntu/images/hvm-ssd/ubuntu-focal-24.04-amd64-server-*"
-      root-device-type    = "ebs"
-      virtualization-type = "hvm"
-    }
-    owners      = ["099720109477"]
-    most_recent = true
-  }
-  instance_type          = "t2.small"
-  ami_name               = "assignment4_ami_Deepansh_${formatdate("YYYY_MM_DD",timestamp())}"
-  ssh_username           = "ubuntu"
+  region  = var.aws_region
+  profile = "dev" # Specify your AWS CLI profile, if needed
+  #   source_ami_filter {
+  #     filters = {
+  #       name                = "ubuntu/images/hvm-ssd/ubuntu-focal-24.04-amd64-server-*"
+  #       root-device-type    = "ebs"
+  #     }
+  #     owners      = ["099720109477"]
+  #     most_recent = true
+  #   }
+  source_ami    = "ami-0866a3c8686eaeeba"
+  instance_type = "t2.small"
+  ami_name      = "assignment4_ami_Deepansh_${formatdate("YYYY_MM_DD", timestamp())}"
+  ssh_username  = "ubuntu"
   tags = {
     Name        = "custom-ubuntu-24.04-node-postgres"
     Environment = "dev"
