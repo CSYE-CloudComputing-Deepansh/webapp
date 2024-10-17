@@ -61,7 +61,11 @@ jobs:
         id: init
         run: "packer init ./packer/main.pkr.hcl"
 
-      - name: Run packer fmt
+
+      - name: Run packer validate
+        run: |
+          packer fmt -recursive -check ./packer/main.pkr.hcl
+      - name: Run packer validate
         run: |
           # Create the build-artifacts directory and a placeholder app-package.zip file if they don't exist
           mkdir -p ./build-artifacts
