@@ -1,6 +1,6 @@
 variable "artifact_path" {
   type    = string
-  default = "/tmp/build-artifacts"
+  default = "./webapp"  # Set to the webapp directory as the source
 }
 
 variable "aws_region" {
@@ -49,15 +49,15 @@ build {
   }
 
   # Install PostgreSQL and Node.js
-  provisioner "shell" {
-    inline = [
-      "sudo apt-get update",
-      "sudo apt-get install -y nodejs npm",
-      "sudo apt-get install -y postgresql postgresql-contrib",
-      "sudo systemctl enable postgresql",
-      "sudo apt-get clean"
-    ]
-  }
+ provisioner "shell" {
+  inline = [
+    "sudo chown -R ubuntu:ubuntu /opt/webapp",
+    "sudo chmod -R 755 /opt/webapp",
+    "sudo systemctl daemon-reload",
+    "sudo systemctl enable nodeapp"
+  ]
+}
+
 
   # Create non-login user
   provisioner "shell" {
@@ -68,10 +68,10 @@ build {
   }
 
   # Copy application artifact and configure permissions
-  provisioner "file" {
-    source      = var.artifact_path
-    destination = "/tmp/build-artifacts"
-  }
+provisioner "file" {
+  source      = var.artifact_path
+  destination = "/opt/webapp"
+}
 
   provisioner "shell" {
     inline = [
