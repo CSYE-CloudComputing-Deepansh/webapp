@@ -1,0 +1,58 @@
+name: Build and Deploy Custom AMI
+
+on:
+  pull_request:
+    types: [closed]
+  push:
+    branches:
+      - '*'
+jobs:
+  test_and_build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16' # Adjust to your Node.js version
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run integration tests
+        run: npm test # Modify based on your test command
+
+      - name: Build application artifact
+        run: |
+          npm run build # Modify this command to match your build script
+          mkdir -p build-artifacts
+          cp -r dist/* build-artifacts/ # Adjust this if your build output is different
+
+  build_custom_ami:
+    if: github.event.pull_request.merged == true
+    needs: test_and_build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Install Packer
+        run: |
+          curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
+          sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+          sudo apt-get update && sudo apt-get install -y packer
+
+      - name: Build custom AMI with Packer
+        env:
+          AWS_REGION: us-east-1 # Or use secrets if needed
+        run: |
+          packer build -var "artifact_path=./build-artifacts" -var "aws_region=${{ env.AWS_REGION }}" packer-template.hcl
