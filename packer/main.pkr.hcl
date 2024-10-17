@@ -85,13 +85,14 @@ build {
   # Configure systemd service
   provisioner "shell" {
     inline = [
-      "echo '[Unit]' > /etc/systemd/system/nodeapp.service",
-      "echo 'Description=Node.js Application' >> /etc/systemd/system/nodeapp.service",
-      "echo '[Service]' >> /etc/systemd/system/nodeapp.service",
-      "echo 'ExecStart=/usr/bin/node /opt/app/server.js' >> /etc/systemd/system/nodeapp.service",
-      "echo 'Restart=always' >> /etc/systemd/system/nodeapp.service",
-      "echo '[Install]' >> /etc/systemd/system/nodeapp.service",
-      "echo 'WantedBy=multi-user.target' >> /etc/systemd/system/nodeapp.service",
+      "echo 'Creating /etc/systemd/system/nodeapp.service with sudo permissions'",
+      "echo '[Unit]' | sudo tee /etc/systemd/system/nodeapp.service",
+      "echo 'Description=Node.js Application' | sudo tee -a /etc/systemd/system/nodeapp.service",
+      "echo '[Service]' | sudo tee -a /etc/systemd/system/nodeapp.service",
+      "echo 'ExecStart=/usr/bin/node /opt/app/server.js' | sudo tee -a /etc/systemd/system/nodeapp.service",
+      "echo 'Restart=always' | sudo tee -a /etc/systemd/system/nodeapp.service",
+      "echo '[Install]' | sudo tee -a /etc/systemd/system/nodeapp.service",
+      "echo 'WantedBy=multi-user.target' | sudo tee -a /etc/systemd/system/nodeapp.service",
       "sudo systemctl daemon-reload",
       "sudo systemctl enable nodeapp"
     ]
