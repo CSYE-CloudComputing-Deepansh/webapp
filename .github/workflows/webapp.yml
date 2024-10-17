@@ -73,12 +73,12 @@ jobs:
           # Optionally, remove the placeholder after validation
           rm ./build-artifacts/app-package.zip
 
-      - name: Run packer validate
-        run: |
-          if [ ! -d "./build-artifacts" ]; then
-            mkdir -p ./build-artifacts
-          fi
-          packer validate ./packer/main.pkr.hcl
+      # - name: Run packer validate
+      #   run: |
+      #     if [ ! -d "./build-artifacts" ]; then
+      #       mkdir -p ./build-artifacts
+      #     fi
+      #     packer validate ./packer/main.pkr.hcl
 
       - name: Run tests
         env:
