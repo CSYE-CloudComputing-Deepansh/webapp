@@ -44,6 +44,7 @@ build {
     inline = [
       "sudo apt-get update",
       "sudo apt-get install -y nodejs npm",
+      "sudo apt-get install -y unzip",
       "sudo apt-get install -y postgresql postgresql-contrib",
       "sudo systemctl enable postgresql",
       "sudo apt-get clean"
