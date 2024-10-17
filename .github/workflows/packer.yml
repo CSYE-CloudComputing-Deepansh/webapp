@@ -43,7 +43,7 @@ jobs:
           DB_USERNAME: ${{ secrets.DB_USERNAME }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DB_INSTANCE: ${{ secrets.DB_INSTANCE }}
-        run: mocha ./app/test/integration/user.test.js
+        run: npm test
 
       - name: Package application with dependencies
         run: |
