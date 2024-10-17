@@ -75,10 +75,10 @@ provisioner "file" {
 
   provisioner "shell" {
     inline = [
-      "sudo mkdir -p /opt/app",
-      "sudo cp -r /tmp/build-artifacts/* /opt/app/",
-      "sudo chown -R csye6225:csye6225 /opt/app",
-      "sudo chmod -R 755 /opt/app"
+      "sudo mkdir -p /opt/webapp",
+      "sudo cp -r /tmp/build-artifacts/* /opt/webapp",
+      "sudo chown -R csye6225:csye6225 /opt/webapp",
+      "sudo chmod -R 755 /opt/webapp"
     ]
   }
 
@@ -89,7 +89,7 @@ provisioner "file" {
       "echo '[Unit]' | sudo tee /etc/systemd/system/nodeapp.service",
       "echo 'Description=Node.js Application' | sudo tee -a /etc/systemd/system/nodeapp.service",
       "echo '[Service]' | sudo tee -a /etc/systemd/system/nodeapp.service",
-      "echo 'ExecStart=/usr/bin/node /opt/app/server.js' | sudo tee -a /etc/systemd/system/nodeapp.service",
+      "echo 'ExecStart=/usr/bin/node /opt/webapp/server.js' | sudo tee -a /etc/systemd/system/nodeapp.service",
       "echo 'Restart=always' | sudo tee -a /etc/systemd/system/nodeapp.service",
       "echo '[Install]' | sudo tee -a /etc/systemd/system/nodeapp.service",
       "echo 'WantedBy=multi-user.target' | sudo tee -a /etc/systemd/system/nodeapp.service",
