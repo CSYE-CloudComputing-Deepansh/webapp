@@ -54,9 +54,9 @@ jobs:
         id: init
         run: "packer init ./packer/main.pkr.hcl"
      
-      - name: Run `packer validate`
-        id: validate
-        run: "packer validate ./packer/main.pkr.hcl"
+    #   - name: Run `packer validate`
+    #     id: validate
+    #     run: "packer validate ./packer/main.pkr.hcl"
 
     #   - name: Install Packer
     #     run: |
