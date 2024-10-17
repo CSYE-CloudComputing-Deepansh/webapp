@@ -8,7 +8,7 @@ on:
       - '*'
 
 jobs:
-  test_and_build_and_deploy:
+  test_and_package:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -25,11 +25,10 @@ jobs:
       - name: Run integration tests
         run: npm test
 
-      - name: Build application artifact
+      - name: Package application with dependencies
         run: |
-          npm run build
           mkdir -p build-artifacts
-          cp -r dist/* build-artifacts/
+          zip -r build-artifacts/app-package.zip .  # Zip the entire app, including node_modules
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -38,7 +37,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_REGION }}
 
-      - name: Setup `packer`
+      - name: Setup Packer
         uses: hashicorp/setup-packer@main
         id: setup
         with: 
@@ -50,6 +49,6 @@ jobs:
      
       - name: Build custom AMI with Packer
         env:
-          AWS_REGION:  ${{ vars.AWS_REGION }}
+          AWS_REGION: ${{ vars.AWS_REGION }}
         run: |
-         PACKER_LOG=1 packer build -var "artifact_path=./build-artifacts" -var "aws_region=${{ vars.AWS_REGION }}" ./packer/main.pkr.hcl
+          PACKER_LOG=1 packer build -var "artifact_path=./build-artifacts/app-package.zip" -var "aws_region=${{ vars.AWS_REGION }}" ./packer/main.pkr.hcl

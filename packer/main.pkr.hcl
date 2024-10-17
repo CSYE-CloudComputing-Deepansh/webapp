@@ -1,6 +1,6 @@
 variable "artifact_path" {
   type    = string
-  default = "./build-artifacts"  # Points to the artifact built by GitHub Actions
+  default = "./build-artifacts/app-package.zip"  # Point to the zip file specifically
 }
 
 variable "aws_region" {
@@ -66,10 +66,19 @@ build {
     ]
   }
 
-  # Copy the application artifact from GitHub Actions to /opt/webapp
+  # Copy the zip file to the instance
   provisioner "file" {
     source      = var.artifact_path
-    destination = "/opt/webapp"
+    destination = "/opt/webapp/app-package.zip"
+  }
+
+  # Extract the zip file and clean up
+  provisioner "shell" {
+    inline = [
+      "cd /opt/webapp",
+      "sudo unzip app-package.zip -d /opt/webapp",  # Extract contents of the zip to /opt/webapp
+      "rm /opt/webapp/app-package.zip"  # Remove zip file after extraction
+    ]
   }
 
   # Set ownership for csye6225 user after copying the artifacts
@@ -86,7 +95,7 @@ build {
       "echo '[Unit]' | sudo tee /etc/systemd/system/nodeapp.service",
       "echo 'Description=Node.js Application' | sudo tee -a /etc/systemd/system/nodeapp.service",
       "echo '[Service]' | sudo tee -a /etc/systemd/system/nodeapp.service",
-      "echo 'ExecStart=/usr/bin/node /opt/webapp/build-artifacts/server.js' | sudo tee -a /etc/systemd/system/nodeapp.service",
+      "echo 'ExecStart=/usr/bin/node /opt/webapp/server.js' | sudo tee -a /etc/systemd/system/nodeapp.service",  # Updated path
       "echo 'Restart=always' | sudo tee -a /etc/systemd/system/nodeapp.service",
       "echo '[Install]' | sudo tee -a /etc/systemd/system/nodeapp.service",
       "echo 'WantedBy=multi-user.target' | sudo tee -a /etc/systemd/system/nodeapp.service",
