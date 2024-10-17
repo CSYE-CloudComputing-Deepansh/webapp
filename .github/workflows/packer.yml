@@ -25,6 +25,14 @@ jobs:
       - name: Run integration tests
         run: npm test
 
+      - name: Create .env file with secrets
+        run: |
+          echo "DB_CONN_STRING=postgres:" >> .env
+          echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
+          echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> .env
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+          echo "DB_INSTANCE=localhost:5432" >> .env
+
       - name: Package application with dependencies
         run: |
           mkdir -p build-artifacts
@@ -50,5 +58,8 @@ jobs:
       - name: Build custom AMI with Packer
         env:
           AWS_REGION: ${{ vars.AWS_REGION }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
         run: |
           PACKER_LOG=1 packer build -var "artifact_path=./build-artifacts/app-package.zip" -var "aws_region=${{ vars.AWS_REGION }}" ./packer/main.pkr.hcl

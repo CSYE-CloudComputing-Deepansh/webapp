@@ -51,6 +51,20 @@ build {
     ]
   }
 
+    # Configure PostgreSQL with environment variable credentials
+  provisioner "shell" {
+    inline = [
+      "sudo -u postgres psql -c \"CREATE DATABASE ${DB_NAME};\"",
+      "sudo -u postgres psql -c \"CREATE USER ${DB_USERNAME} WITH PASSWORD '${DB_PASSWORD}';\"",
+      "sudo -u postgres psql -c \"GRANT ALL PRIVILEGES ON DATABASE ${DB_NAME} TO ${DB_USERNAME};\""
+    ],
+    environment_vars = [
+      "DB_NAME=${DB_NAME}",
+      "DB_USERNAME=${DB_USERNAME}",
+      "DB_PASSWORD=${DB_PASSWORD}"
+    ]
+  }
+
   # Create non-login user 'csye6225' with restricted shell
   provisioner "shell" {
     inline = [
