@@ -1,0 +1,81 @@
+name: Build and Deploy Custom AMI
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  test_and_package:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Create .env file with secrets
+        env:
+          DB_CONN_STRING: ${{ secrets.DB_CONN_STRING }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_INSTANCE: ${{ secrets.DB_INSTANCE }}
+        run: |
+          echo "DB_CONN_STRING=$DB_CONN_STRING" >> .env
+          echo "DB_NAME=$DB_NAME" >> .env
+          echo "DB_USERNAME=$DB_USERNAME" >> .env
+          echo "DB_PASSWORD=$DB_PASSWORD" >> .env
+          echo "DB_INSTANCE=$DB_INSTANCE" >> .env
+
+      - name: Run integration tests
+        env:
+          DB_CONN_STRING: ${{ secrets.DB_CONN_STRING }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_INSTANCE: ${{ secrets.DB_INSTANCE }}
+        run: npm test
+
+      - name: Package application with dependencies
+        run: |
+          mkdir -p build-artifacts
+          zip -r build-artifacts/app-package.zip .  # Zip the entire app, including node_modules
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Setup Packer
+        uses: hashicorp/setup-packer@main
+        id: setup
+        with: 
+          version: 1.11.2
+                   
+      - name: Run `packer init`
+        id: init
+        run: "packer init ./packer/main.pkr.hcl"
+     
+      - name: Build custom AMI with Packer
+        env:
+          AWS_REGION: ${{ vars.AWS_REGION }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        run: |
+           PACKER_LOG=1 packer build \
+            -var "artifact_path=./build-artifacts/app-package.zip" \
+            -var "aws_region=${{ vars.AWS_REGION }}" \
+            -var "DB_NAME=${{ secrets.DB_NAME }}" \
+            -var "DB_USERNAME=${{ secrets.DB_USERNAME }}" \
+            -var "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" \
+            ./packer/main.pkr.hcl

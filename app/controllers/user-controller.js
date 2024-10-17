@@ -9,6 +9,12 @@ const saveUser = async (req, res) => {
             return res.status(400).json({ message: "All fields needed" });
         }
 
+         // Email format validation using regex
+         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+         if (!emailRegex.test(email)) {
+             return res.status(400).json({ message: "Invalid email format" });
+         }
+
         const existingUser = await userService.findUser(email);
         if (existingUser) {
             return res.status(400).json({ message: "User already exists" });
@@ -68,6 +74,12 @@ const updateUser = async (req, res) => {
         const isInvalidUpdate = updates.some(
             (field) => !allowedFields.includes(field) || forbiddenFields.includes(field)
         );
+
+        // Email format validation using regex
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ message: "Invalid email format" });
+        }
 
         if (isInvalidUpdate) {
             return res.status(400).json({
