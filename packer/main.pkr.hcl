@@ -1,6 +1,6 @@
 variable "artifact_path" {
   type    = string
-  default = "./webapp"  # Set to the webapp directory as the source
+  default = "./build-artifacts"  # Points to the artifact built by GitHub Actions
 }
 
 variable "aws_region" {
@@ -8,7 +8,6 @@ variable "aws_region" {
   default = "us-east-1"
 }
 
-# Specify required plugins
 packer {
   required_plugins {
     amazon = {
@@ -20,8 +19,7 @@ packer {
 
 source "amazon-ebs" "ubuntu_ami" {
   region                 = var.aws_region
-  profile                = "dev" # Specify your AWS CLI profile, if needed
-  source_ami             = "ami-0866a3c8686eaeeba" # Using a specific AMI
+  source_ami             = "ami-0866a3c8686eaeeba"
   instance_type          = "t2.small"
   ami_name               = "assignment4_ami_Deepansh_${formatdate("YYYY_MM_DD", timestamp())}"
   ssh_username           = "ubuntu"
@@ -52,7 +50,7 @@ build {
     ]
   }
 
-  # Create non-login user
+  # Create non-login user 'csye6225' with restricted shell
   provisioner "shell" {
     inline = [
       "sudo groupadd -r csye6225",
@@ -60,18 +58,31 @@ build {
     ]
   }
 
-  # Copy application artifact to /opt/webapp
+  # Ensure /opt/webapp exists and set ownership for ubuntu to allow copying
+  provisioner "shell" {
+    inline = [
+      "sudo mkdir -p /opt/webapp",
+      "sudo chown -R ubuntu:ubuntu /opt/webapp"
+    ]
+  }
+
+  # Copy the application artifact from GitHub Actions to /opt/webapp
   provisioner "file" {
     source      = var.artifact_path
     destination = "/opt/webapp"
   }
 
-  # Set permissions on /opt/webapp and configure systemd service
+  # Set ownership for csye6225 user after copying the artifacts
   provisioner "shell" {
     inline = [
       "sudo chown -R csye6225:csye6225 /opt/webapp",
-      "sudo chmod -R 755 /opt/webapp",
-      "echo 'Creating /etc/systemd/system/nodeapp.service with sudo permissions'",
+      "sudo chmod -R 755 /opt/webapp"
+    ]
+  }
+
+  # Configure the systemd service for the application
+  provisioner "shell" {
+    inline = [
       "echo '[Unit]' | sudo tee /etc/systemd/system/nodeapp.service",
       "echo 'Description=Node.js Application' | sudo tee -a /etc/systemd/system/nodeapp.service",
       "echo '[Service]' | sudo tee -a /etc/systemd/system/nodeapp.service",
