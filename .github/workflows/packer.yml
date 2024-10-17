@@ -54,4 +54,4 @@ jobs:
         env:
           AWS_REGION:  ${{ vars.AWS_REGION }}
         run: |
-          packer build -var "artifact_path=./build-artifacts" -var "aws_region=${{ vars.AWS_REGION }}" packer-template.hcl
+          packer build -var "artifact_path=./build-artifacts" -var "aws_region=${{ vars.AWS_REGION }}" app/packer/files.pkr.hcl
