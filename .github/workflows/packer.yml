@@ -16,22 +16,21 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '16' # Adjust to your Node.js version
+          node-version: '18'
 
       - name: Install dependencies
         run: npm install
 
       - name: Run integration tests
-        run: npm test # Modify based on your test command
+        run: npm test
 
       - name: Build application artifact
         run: |
-          npm run build # Modify this command to match your build script
+          npm run build
           mkdir -p build-artifacts
-          cp -r dist/* build-artifacts/ # Adjust this if your build output is different
+          cp -r dist/* build-artifacts/
 
   build_custom_ami:
-    if: github.event.pull_request.merged == true
     needs: test_and_build
     runs-on: ubuntu-latest
     steps:
@@ -53,6 +52,6 @@ jobs:
 
       - name: Build custom AMI with Packer
         env:
-          AWS_REGION: us-east-1 # Or use secrets if needed
+          AWS_REGION:  ${{ secrets.AWS_REGION }}
         run: |
           packer build -var "artifact_path=./build-artifacts" -var "aws_region=${{ env.AWS_REGION }}" packer-template.hcl
