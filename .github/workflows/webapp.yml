@@ -57,6 +57,22 @@ jobs:
           echo "DB_PASSWORD=password" >> $GITHUB_ENV
           echo "DB_NAME=postgres" >> $GITHUB_ENV
 
+      - name: Run packer fmt
+        run: |
+          fmt_result=$(packer fmt -check ./packer/main.pkr.hcl)
+          echo "$fmt_result"
+          if [[ -n "$fmt_result" ]]; then
+            echo "Code formatting required. Run 'packer fmt' locally to fix the format."
+            exit 1
+          fi
+
+      - name: Run packer validate
+        run: |
+          if [ ! -d "./build-artifacts" ]; then
+            mkdir -p ./build-artifacts
+          fi
+          packer validate ./packer/main.pkr.hcl
+
       - name: Run tests
         env:
           DB_HOST: 127.0.0.1
