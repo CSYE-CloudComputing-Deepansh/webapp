@@ -8,6 +8,21 @@ variable "aws_region" {
   default = "us-east-1"
 }
 
+variable "DB_NAME" {
+  type = string
+  default = "postgres"
+}
+
+variable "DB_USERNAME" {
+  type = string
+   default = "postgres"
+}
+
+variable "DB_PASSWORD" {
+  type = string
+   default = "postgres"
+}
+
 packer {
   required_plugins {
     amazon = {

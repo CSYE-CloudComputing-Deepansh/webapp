@@ -74,4 +74,10 @@ jobs:
           DB_USERNAME: ${{ secrets.DB_USERNAME }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
         run: |
-          PACKER_LOG=1 packer build -var "artifact_path=./build-artifacts/app-package.zip" -var "aws_region=${{ vars.AWS_REGION }}" ./packer/main.pkr.hcl
+           PACKER_LOG=1 packer build \
+            -var "artifact_path=./build-artifacts/app-package.zip" \
+            -var "aws_region=${{ vars.AWS_REGION }}" \
+            -var "DB_NAME=${{ secrets.DB_NAME }}" \
+            -var "DB_USERNAME=${{ secrets.DB_USERNAME }}" \
+            -var "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" \
+            ./packer/main.pkr.hcl
