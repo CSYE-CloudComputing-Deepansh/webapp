@@ -57,6 +57,10 @@ jobs:
           echo "DB_PASSWORD=password" >> $GITHUB_ENV
           echo "DB_NAME=postgres" >> $GITHUB_ENV
 
+      - name: Run `packer init`
+        id: init
+        run: "packer init ./packer/main.pkr.hcl"
+
       - name: Run packer fmt
         run: |
           fmt_result=$(packer fmt -check ./packer/main.pkr.hcl)
