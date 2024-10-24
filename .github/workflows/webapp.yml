@@ -84,14 +84,11 @@ jobs:
       #     fi
       #     packer validate ./packer/main.pkr.hcl
 
-      - name: Run tests
+      - name: Run integration tests
         env:
-          DB_HOST: 127.0.0.1
-          DB_PORT: 5432
-          DB_USER: postgres
-          DB_PASSWORD: password
-          DB_NAME: postgres
-        run: |
-          echo "Waiting a few seconds for PostgreSQL to fully initialize..."
-          sleep 5
-          npm test
+          DB_CONN_STRING: ${{ secrets.DB_CONN_STRING }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_INSTANCE: ${{ secrets.DB_INSTANCE }}
+        run: npm test
