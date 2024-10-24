@@ -5,7 +5,6 @@ on:
     types: [closed]
     branches:
       - main
-      - a05_test
 
 jobs:
   test_and_package:
