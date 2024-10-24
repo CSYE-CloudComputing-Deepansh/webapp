@@ -54,24 +54,13 @@ build {
     ]
   }
 
-  # Install PostgreSQL and Node.js
+  # Install Node.js and dependencies
   provisioner "shell" {
     inline = [
       "sudo apt-get update",
       "sudo apt-get install -y nodejs npm",
       "sudo apt-get install -y unzip",
-      "sudo apt-get install -y postgresql postgresql-contrib",
-      "sudo systemctl enable postgresql",
       "sudo apt-get clean"
-    ]
-  }
-
-  # Configure PostgreSQL with environment variable credentials
-  provisioner "shell" {
-    inline = [
-      "sudo -u postgres psql -c \"CREATE DATABASE ${var.DB_NAME};\"",
-      "sudo -u postgres psql -c \"CREATE USER ${var.DB_USERNAME} WITH PASSWORD '${var.DB_PASSWORD}';\"",
-      "sudo -u postgres psql -c \"GRANT ALL PRIVILEGES ON DATABASE ${var.DB_NAME} TO ${var.DB_USERNAME};\""
     ]
   }
 
@@ -114,13 +103,17 @@ build {
     ]
   }
 
-  # Configure the systemd service for the application
+  # Configure the systemd service for the application with environment variables
   provisioner "shell" {
     inline = [
       "echo '[Unit]' | sudo tee /etc/systemd/system/nodeapp.service",
       "echo 'Description=Node.js Application' | sudo tee -a /etc/systemd/system/nodeapp.service",
       "echo '[Service]' | sudo tee -a /etc/systemd/system/nodeapp.service",
-      "echo 'ExecStart=/usr/bin/node /opt/webapp/server.js' | sudo tee -a /etc/systemd/system/nodeapp.service", # Updated path
+      "echo 'Environment=DB_HOST=${var.db_host}' | sudo tee -a /etc/systemd/system/nodeapp.service",
+      "echo 'Environment=DB_NAME=${var.DB_NAME}' | sudo tee -a /etc/systemd/system/nodeapp.service",
+      "echo 'Environment=DB_USERNAME=${var.DB_USERNAME}' | sudo tee -a /etc/systemd/system/nodeapp.service",
+      "echo 'Environment=DB_PASSWORD=${var.DB_PASSWORD}' | sudo tee -a /etc/systemd/system/nodeapp.service",
+      "echo 'ExecStart=/usr/bin/node /opt/webapp/server.js' | sudo tee -a /etc/systemd/system/nodeapp.service",
       "echo 'Restart=always' | sudo tee -a /etc/systemd/system/nodeapp.service",
       "echo '[Install]' | sudo tee -a /etc/systemd/system/nodeapp.service",
       "echo 'WantedBy=multi-user.target' | sudo tee -a /etc/systemd/system/nodeapp.service",
