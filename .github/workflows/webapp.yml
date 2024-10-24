@@ -42,11 +42,11 @@ jobs:
 
       - name: Create .env file with secrets in the root folder
         run: |
-          echo "DB_CONN_STRING=${{ secrets.DB_CONN_STRING || 'postgres:' }}" > .env
-          echo "DB_NAME=${{ secrets.DB_NAME || 'assignment'}}" >> .env
-          echo "DB_USERNAME=${{ secrets.DB_USERNAME || 'dbuser'}}" >> .env
-          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD || 'password' }}" >> .env
-          echo "DB_INSTANCE=${{ secrets.DB_INSTANCE || 'localhost:5432'}}" >> .env
+          echo "DB_CONN_STRING=postgres:" > .env
+          echo "DB_NAME=assignment">> .env
+          echo "DB_USERNAME=dbuser" >> .env
+          echo "DB_PASSWORD=password" >> .env
+          echo "DB_INSTANCE=localhost:5432" >> .env
 
       - name: Print current directory and list files
         run: |
