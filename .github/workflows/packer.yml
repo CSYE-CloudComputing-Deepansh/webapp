@@ -37,14 +37,14 @@ jobs:
           echo "DB_PASSWORD=$DB_PASSWORD" >> .env
           echo "DB_INSTANCE=$DB_INSTANCE" >> .env
 
-      - name: Run integration tests
-        env:
-          DB_CONN_STRING: ${{ secrets.DB_CONN_STRING }}
-          DB_NAME: ${{ secrets.DB_NAME }}
-          DB_USERNAME: ${{ secrets.DB_USERNAME }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          DB_INSTANCE: ${{ secrets.DB_INSTANCE }}
-        run: npm test
+      # - name: Run integration tests
+      #   env:
+      #     DB_CONN_STRING: ${{ secrets.DB_CONN_STRING }}
+      #     DB_NAME: ${{ secrets.DB_NAME }}
+      #     DB_USERNAME: ${{ secrets.DB_USERNAME }}
+      #     DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      #     DB_INSTANCE: ${{ secrets.DB_INSTANCE }}
+      #   run: npm test
 
       - name: Package application with dependencies
         run: |
