@@ -1,3 +1,4 @@
+require('dotenv').config();
 const app = require('./app/app.js'); // Import the already-initialized app
 const port = 8000; // Define the port
 

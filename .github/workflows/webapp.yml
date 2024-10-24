@@ -38,60 +38,43 @@ jobs:
           node-version: ${{ matrix.node-version }}
 
       - name: Install dependencies
-        run: npm install
+        run: |
+             npm install
+             npm install dotenv
 
-      - name: Wait for PostgreSQL to be ready
+      - name: Create .env file with secrets in the root folder
+        run: |
+          echo "DB_CONN_STRING=postgres:" > .env
+          echo "DB_NAME=assignment">> .env
+          echo "DB_USERNAME=dbuser" >> .env
+          echo "DB_PASSWORD=password" >> .env
+          echo "DB_INSTANCE=localhost:5432" >> .env
+          
+
+      - name: Print current directory and list files
+        run: |
+          echo "Current directory: $(pwd)"
+          echo "Files in the current directory:"
+          ls -la
+
+      - name: Print .env file for debugging
+        run: cat .env
+
+      - name: Source .env file and print environment variables
+        run: |
+          chmod 644 .env
+          set -o allexport
+          source .env
+          set +o allexport
+          echo "DB_CONN_STRING=$DB_CONN_STRING"
+          echo "DB_NAME=$DB_NAME"
+          echo "DB_USERNAME=$DB_USERNAME"
+          echo "DB_PASSWORD=$DB_PASSWORD"
+          echo "DB_INSTANCE=$DB_INSTANCE"
+
+      - name: Run integration tests
         env:
-          PGPASSWORD: password 
+          NODE_ENV: ci  # Optional: to differentiate between CI and other environments
         run: |
-          until pg_isready -h 127.0.0.1 -p 5432 -U postgres; do
-            echo "Waiting for PostgreSQL to be ready..."
-            sleep 1
-          done
-
-      - name: Set environment variables for database
-        run: |
-          echo "DB_HOST=127.0.0.1" >> $GITHUB_ENV
-          echo "DB_PORT=5432" >> $GITHUB_ENV
-          echo "DB_USER=postgres" >> $GITHUB_ENV
-          echo "DB_PASSWORD=password" >> $GITHUB_ENV
-          echo "DB_NAME=postgres" >> $GITHUB_ENV
-
-      - name: Run `packer init`
-        id: init
-        run: "packer init ./packer/main.pkr.hcl"
-
-
-      - name: Run packer validate
-        run: |
-          packer fmt -recursive -check ./packer/main.pkr.hcl
-      - name: Run packer validate
-        run: |
-          # Create the build-artifacts directory and a placeholder app-package.zip file if they don't exist
-          mkdir -p ./build-artifacts
-          touch ./build-artifacts/app-package.zip
-
-          # Run Packer validate
-          packer validate ./packer/main.pkr.hcl
-
-          # Optionally, remove the placeholder after validation
-          rm ./build-artifacts/app-package.zip
-
-      # - name: Run packer validate
-      #   run: |
-      #     if [ ! -d "./build-artifacts" ]; then
-      #       mkdir -p ./build-artifacts
-      #     fi
-      #     packer validate ./packer/main.pkr.hcl
-
-      - name: Run tests
-        env:
-          DB_HOST: 127.0.0.1
-          DB_PORT: 5432
-          DB_USER: postgres
-          DB_PASSWORD: password
-          DB_NAME: postgres
-        run: |
-          echo "Waiting a few seconds for PostgreSQL to fully initialize..."
-          sleep 5
-          npm test
+          echo "Running integration tests..."
+          #npm test

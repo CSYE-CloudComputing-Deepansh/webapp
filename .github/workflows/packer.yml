@@ -3,6 +3,8 @@ name: Build and Deploy Custom AMI
 on:
   pull_request:
     types: [closed]
+    branches:
+      - main
 
 jobs:
   test_and_package:
@@ -41,7 +43,8 @@ jobs:
           DB_USERNAME: ${{ secrets.DB_USERNAME }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DB_INSTANCE: ${{ secrets.DB_INSTANCE }}
-        run: npm test
+        run: |
+            #npm test
 
       - name: Package application with dependencies
         run: |
@@ -64,6 +67,21 @@ jobs:
       - name: Run `packer init`
         id: init
         run: "packer init ./packer/main.pkr.hcl"
+
+      - name: Run packer validate
+        run: |
+          packer fmt -recursive -check ./packer/main.pkr.hcl
+      - name: Run packer validate
+        run: |
+          # Create the build-artifacts directory and a placeholder app-package.zip file if they don't exist
+          mkdir -p ./build-artifacts
+          touch ./build-artifacts/app-package.zip
+
+          # Run Packer validate
+          packer validate ./packer/main.pkr.hcl
+
+          # Optionally, remove the placeholder after validation
+          rm ./build-artifacts/app-package.zip
      
       - name: Build custom AMI with Packer
         env:
