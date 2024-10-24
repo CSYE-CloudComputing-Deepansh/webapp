@@ -77,7 +77,7 @@ const updateUser = async (req, res) => {
 
         // Email format validation using regex
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
+        if (!emailRegex.test(req.body.email)) {
             return res.status(400).json({ message: "Invalid email format" });
         }
 

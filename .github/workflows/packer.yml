@@ -37,14 +37,14 @@ jobs:
           echo "DB_PASSWORD=$DB_PASSWORD" >> .env
           echo "DB_INSTANCE=$DB_INSTANCE" >> .env
 
-      # - name: Run integration tests
-      #   env:
-      #     DB_CONN_STRING: ${{ secrets.DB_CONN_STRING }}
-      #     DB_NAME: ${{ secrets.DB_NAME }}
-      #     DB_USERNAME: ${{ secrets.DB_USERNAME }}
-      #     DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-      #     DB_INSTANCE: ${{ secrets.DB_INSTANCE }}
-      #   run: npm test
+      - name: Run integration tests
+        env:
+          DB_CONN_STRING: ${{ secrets.DB_CONN_STRING }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_INSTANCE: ${{ secrets.DB_INSTANCE }}
+        run: npm test
 
       - name: Package application with dependencies
         run: |
@@ -71,17 +71,17 @@ jobs:
       - name: Run packer validate
         run: |
           packer fmt -recursive -check ./packer/main.pkr.hcl
-      # - name: Run packer validate
-      #   run: |
-      #     # Create the build-artifacts directory and a placeholder app-package.zip file if they don't exist
-      #     mkdir -p ./build-artifacts
-      #     touch ./build-artifacts/app-package.zip
+      - name: Run packer validate
+        run: |
+          # Create the build-artifacts directory and a placeholder app-package.zip file if they don't exist
+          mkdir -p ./build-artifacts
+          touch ./build-artifacts/app-package.zip
 
-      #     # Run Packer validate
-      #     packer validate ./packer/main.pkr.hcl
+          # Run Packer validate
+          packer validate ./packer/main.pkr.hcl
 
-      #     # Optionally, remove the placeholder after validation
-      #     rm ./build-artifacts/app-package.zip
+          # Optionally, remove the placeholder after validation
+          rm ./build-artifacts/app-package.zip
      
       - name: Build custom AMI with Packer
         env:
