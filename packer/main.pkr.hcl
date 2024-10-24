@@ -39,7 +39,7 @@ source "amazon-ebs" "ubuntu_ami" {
   ami_name      = "assignment4_ami_Deepansh_${formatdate("YYYY_MM_DD", timestamp())}"
   ssh_username  = "ubuntu"
   tags = {
-    Name        = "custom-ubuntu-24.04-node-postgres"
+    Name        = "custom-ubuntu-24.04-node"
     Environment = "dev"
   }
 }
@@ -109,10 +109,6 @@ build {
       "echo '[Unit]' | sudo tee /etc/systemd/system/nodeapp.service",
       "echo 'Description=Node.js Application' | sudo tee -a /etc/systemd/system/nodeapp.service",
       "echo '[Service]' | sudo tee -a /etc/systemd/system/nodeapp.service",
-      "echo 'Environment=DB_HOST=${var.db_host}' | sudo tee -a /etc/systemd/system/nodeapp.service",
-      "echo 'Environment=DB_NAME=${var.DB_NAME}' | sudo tee -a /etc/systemd/system/nodeapp.service",
-      "echo 'Environment=DB_USERNAME=${var.DB_USERNAME}' | sudo tee -a /etc/systemd/system/nodeapp.service",
-      "echo 'Environment=DB_PASSWORD=${var.DB_PASSWORD}' | sudo tee -a /etc/systemd/system/nodeapp.service",
       "echo 'ExecStart=/usr/bin/node /opt/webapp/server.js' | sudo tee -a /etc/systemd/system/nodeapp.service",
       "echo 'Restart=always' | sudo tee -a /etc/systemd/system/nodeapp.service",
       "echo '[Install]' | sudo tee -a /etc/systemd/system/nodeapp.service",
