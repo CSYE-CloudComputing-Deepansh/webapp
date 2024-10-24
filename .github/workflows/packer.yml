@@ -81,7 +81,7 @@ jobs:
           packer validate ./packer/main.pkr.hcl
 
           # Optionally, remove the placeholder after validation
-          rm ./build-artifacts/app-package.zip
+          #rm ./build-artifacts/app-package.zip
      
       - name: Build custom AMI with Packer
         env:
