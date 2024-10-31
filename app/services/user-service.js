@@ -98,13 +98,11 @@ const saveProfilePic = async (files, req, res) => {
 
 
 
-
 // Get image metadata for a user
 const getImage = async (filter) => {
   try {
-    
     // Fetch image metadata from database
-    const image = await getImage({ user_id: user.id });
+    const image = await Image.findOne({ where: {user_id: filter.user_id} });
     if (!image) {
       recordMetric('api.getProfilePic.failure');
       return;
