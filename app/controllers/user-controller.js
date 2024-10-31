@@ -135,6 +135,7 @@ const saveProfilePic = async (req, res) => {
     try {
         const user = req.user;
         const file = req.file;
+        console.log('File buffer:', file ? file.buffer : 'No file');
 
         if (!file) {
             recordMetric('api.saveProfilePic.failure');
@@ -142,13 +143,7 @@ const saveProfilePic = async (req, res) => {
         }
 
         // Save image metadata in the database
-        const imageMetadata = {
-            file_name: file.key,
-            url: file.location,
-            user_id: user.id
-        };
-
-        const imageRecord = await userService.saveImage(imageMetadata);
+        const imageRecord = await userService.saveProfilePic(file, req, res);
         recordMetric('api.saveProfilePic.success');
         const duration = Date.now() - start;
         recordMetric('api.saveProfilePic.duration', duration, 'timing');
@@ -170,7 +165,9 @@ const getProfilePic = async (req, res) => {
             return res.status(404).json({ message: "Profile picture not found" });
         }
 
-        return res.status(200).json(image);
+        res.setHeader('Content-Type', image.ContentType);
+        res.status(200).send(image.Body);
+        return res;
     } catch (error) {
         recordMetric('api.getProfilePic.failure');
         return res.status(500).json({ message: "Error fetching profile picture", error: error.message });
@@ -181,20 +178,13 @@ const getProfilePic = async (req, res) => {
 const deleteProfilePic = async (req, res) => {
     try {
         const user = req.user;
-        const image = await userService.getImage({ user_id: user.id });
+        const image = await userService.getImageForDelete({ user_id: user.id });
 
         if (!image) {
             return res.status(404).json({ message: "Profile picture not found" });
         }
-
-        // Delete image from S3
-        await s3.deleteObject({
-            Bucket: process.env.S3_BUCKET_NAME,
-            Key: image.file_name
-        }).promise();
-
         // Remove image record from the database
-        await userService.deleteImage(image.id);
+        await userService.deleteImage(image);
 
         recordMetric('api.deleteProfilePic.success');
         return res.status(200).json({ message: "Profile picture deleted successfully" });

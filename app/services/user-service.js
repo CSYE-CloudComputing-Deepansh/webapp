@@ -5,6 +5,7 @@ const Users = require('../Model/user-model.js').user;
 const Image = require('../Model/image-model.js').image;
 const logger = require('../utility/logger.js');
 const recordMetric = require('../utility/statsd');
+const { getUser } = require('../controllers/user-controller.js');
 
 // Configure S3 client
 const s3 = new AWS.S3({
@@ -46,48 +47,76 @@ const verifyPassword = async (plainPassword, hashedPassword) => {
 };
 
 // Save image to S3 and metadata to the database
-const saveImage = async (file, userId) => {
-  try {
-    // Define S3 parameters for upload
-    const params = {
-      Bucket: process.env.S3_BUCKET_NAME,
-      Key: `${userId}/${Date.now()}_${file.originalname}`, // Create a unique key using user ID and timestamp
-      Body: file.buffer, // Assuming 'file' is coming from multer middleware
-      ContentType: file.mimetype,
-      ACL: 'public-read', // Define permissions as needed
-    };
+const saveProfilePic = async (files, req, res) => {
+    const start = Date.now();
+    try {
+        //const user = req.user;
+        //const userId = user.id;  // Ensure we have user ID
+        const file = files;
 
-    // Upload image to S3
-    const s3Response = await s3.upload(params).promise();
-    const imageUrl = s3Response.Location;
+        if (!file) {
+            recordMetric('api.saveProfilePic.failure');
+            return;
+        }
 
-    // Save image metadata in the database
-    const imageMetadata = {
-      file_name: params.Key,
-      url: imageUrl,
-      user_id: userId,
-    };
+        const authHeader = req.get('authorization');
+        const base64Credentials = authHeader.split(' ')[1];
+        const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
+        const [email, password] = credentials.split(':');
+        const userFind = await findUser(email);
+        // Construct S3 parameters and upload
+        const params = {
+            Bucket: process.env.S3_BUCKET_NAME,
+            Key: `${userFind.id}/${Date.now()}_${file.originalname}`,  // Unique key for each file
+            Body: file.buffer,
+            ContentType: file.mimetype
+        };
 
-    const image = await Image.create(imageMetadata);
-    logger.info(`Image saved to S3 for user: ${userId}`);
-    recordMetric('db.saveImage.success'); // Increment success metric for image save
+        const s3Response = await s3.upload(params).promise();
+        const imageUrl = s3Response.Location;
 
-    return image;
-  } catch (error) {
-    logger.error(`Error saving image: ${error.message}`);
-    recordMetric('db.saveImage.failure'); // Increment failure metric for image save
-    throw error;
-  }
+        // Save image metadata in the database
+        const imageMetadata = {
+            file_name: params.Key,     // Use S3 key as filename
+            url: imageUrl,             // URL of the uploaded image
+            user_id: userFind.id,           // Associate with the user's ID
+            upload_date: new Date()    // Optional: override if needed
+        };
+
+        const imageRecord = await Image.create(imageMetadata);
+
+        recordMetric('api.saveProfilePic.success');
+        const duration = Date.now() - start;
+        recordMetric('api.saveProfilePic.duration', duration, 'timing');
+
+        return imageRecord;
+    } catch (error) {
+        recordMetric('api.saveProfilePic.failure');
+        throw error;
+    }
 };
+
+
 
 // Get image metadata for a user
 const getImage = async (filter) => {
   try {
-    const image = await Image.findOne({ where: filter });
+    // Fetch image metadata from database
+    const image = await Image.findOne({ where: {user_id: filter.user_id} });
     if (!image) {
-      logger.warn(`Image not found for filter: ${JSON.stringify(filter)}`);
+      recordMetric('api.getProfilePic.failure');
+      return;
     }
-    return image;
+
+    // Fetch image from S3
+    const params = {
+      Bucket: process.env.S3_BUCKET_NAME,
+      Key: image.file_name
+    };
+
+    const s3Data = await s3.getObject(params).promise();
+    return s3Data;
+
   } catch (error) {
     logger.error(`Error fetching image: ${error.message}`);
     recordMetric('db.getImage.failure'); // Increment failure metric for image fetch
@@ -95,10 +124,28 @@ const getImage = async (filter) => {
   }
 };
 
+
+const getImageForDelete = async (filter) => {
+    try {
+      // Fetch image metadata from database
+      const image = await Image.findOne({ where: {user_id: filter.user_id} });
+      if (!image) {
+        recordMetric('api.getProfilePic.failure');
+        return;
+      }
+
+      return image;
+  
+    } catch (error) {
+      logger.error(`Error fetching image: ${error.message}`);
+      recordMetric('db.getImage.failure'); // Increment failure metric for image fetch
+      throw error;
+    }
+  };
 // Delete image metadata from the database and S3 bucket
-const deleteImage = async (imageId) => {
+const deleteImage = async (imageS3) => {
   try {
-    const image = await Image.findOne({ where: { id: imageId } });
+    const image = await Image.findOne({ where: { id: imageS3.id } });
     if (!image) {
       throw new Error("Image not found");
     }
@@ -106,13 +153,13 @@ const deleteImage = async (imageId) => {
     // Delete image from S3 bucket
     await s3.deleteObject({
       Bucket: process.env.S3_BUCKET_NAME,
-      Key: image.file_name,
+      Key: imageS3.file_name,
     }).promise();
 
     // Delete image record from database
-    await Image.destroy({ where: { id: imageId } });
+    await Image.destroy({ where: { id: imageS3.id  } });
 
-    logger.info(`Image deleted for user: ${image.user_id}`);
+    logger.info(`Image deleted for user: ${imageS3.user_id}`);
     recordMetric('db.deleteImage.success'); // Increment success metric for image delete
   } catch (error) {
     logger.error(`Error deleting image: ${error.message}`);
@@ -121,4 +168,4 @@ const deleteImage = async (imageId) => {
   }
 };
 
-module.exports = { saveUser, findUser, verifyPassword, saveImage, getImage, deleteImage };
+module.exports = { saveUser, findUser, verifyPassword, saveProfilePic, getImage, deleteImage, getImageForDelete };

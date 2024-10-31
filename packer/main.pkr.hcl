@@ -36,10 +36,10 @@ source "amazon-ebs" "ubuntu_ami" {
   region        = var.aws_region
   source_ami    = "ami-0866a3c8686eaeeba"
   instance_type = "t2.small"
-  ami_name      = "assignment4_ami_Deepansh_${formatdate("YYYY_MM_DD", timestamp())}"
+  ami_name      = "assignment6_ami_Deepansh_${formatdate("YYYY_MM_DD", timestamp())}"
   ssh_username  = "ubuntu"
   tags = {
-    Name        = "custom-ubuntu-24.04-node"
+    Name        = "assignmentCSYE"
     Environment = "dev"
   }
 }
@@ -67,7 +67,11 @@ build {
   # Install CloudWatch Agent
   provisioner "shell" {
     inline = [
-      "sudo yum install amazon-cloudwatch-agent -y"
+      "wget https://amazoncloudwatch-agent.s3.amazonaws.com/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb",
+      # Install the package
+      "sudo dpkg -i amazon-cloudwatch-agent.deb",
+      # Clean up the downloaded package
+      "rm amazon-cloudwatch-agent.deb"
     ]
   }
 
@@ -121,10 +125,10 @@ build {
   # Create environment variables file for application
   provisioner "shell" {
     inline = [
-      "echo 'DB_NAME=${DB_NAME}' | sudo tee -a /opt/webapp/.env",
-      "echo 'DB_USERNAME=${DB_USERNAME}' | sudo tee -a /opt/webapp/.env",
-      "echo 'DB_PASSWORD=${DB_PASSWORD}' | sudo tee -a /opt/webapp/.env",
-      "echo 'AWS_REGION=${aws_region}' | sudo tee -a /opt/webapp/.env"
+      "echo 'DB_NAME=${var.DB_NAME}' | sudo tee -a /opt/webapp/.env",
+      "echo 'DB_USERNAME=${var.DB_USERNAME}' | sudo tee -a /opt/webapp/.env",
+      "echo 'DB_PASSWORD=${var.DB_PASSWORD}' | sudo tee -a /opt/webapp/.env",
+      "echo 'AWS_REGION=${var.aws_region}' | sudo tee -a /opt/webapp/.env"
     ]
   }
 
