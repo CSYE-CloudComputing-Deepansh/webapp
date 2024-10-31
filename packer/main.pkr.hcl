@@ -64,6 +64,21 @@ build {
     ]
   }
 
+  # Install CloudWatch Agent
+  provisioner "shell" {
+    inline = [
+      "sudo yum install amazon-cloudwatch-agent -y"
+    ]
+  }
+
+  # Create CloudWatch Agent configuration file
+  provisioner "shell" {
+    inline = [
+      "sudo mkdir -p /opt/aws/amazon-cloudwatch-agent/etc",
+      "echo '{\"metrics\": {\"metrics_collected\": {\"disk\": {\"measurement\": [\"used_percent\"],\"resources\": [\"/\"]}, \"mem\": {\"measurement\": [\"mem_used_percent\"]}}}}' | sudo tee /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json"
+    ]
+  }
+
   # Create non-login user 'csye6225' with restricted shell
   provisioner "shell" {
     inline = [
@@ -103,6 +118,16 @@ build {
     ]
   }
 
+  # Create environment variables file for application
+  provisioner "shell" {
+    inline = [
+      "echo 'DB_NAME=${DB_NAME}' | sudo tee -a /opt/webapp/.env",
+      "echo 'DB_USERNAME=${DB_USERNAME}' | sudo tee -a /opt/webapp/.env",
+      "echo 'DB_PASSWORD=${DB_PASSWORD}' | sudo tee -a /opt/webapp/.env",
+      "echo 'AWS_REGION=${aws_region}' | sudo tee -a /opt/webapp/.env"
+    ]
+  }
+
   # Configure the systemd service for the application with environment variables
   provisioner "shell" {
     inline = [
@@ -110,11 +135,20 @@ build {
       "echo 'Description=Node.js Application' | sudo tee -a /etc/systemd/system/nodeapp.service",
       "echo '[Service]' | sudo tee -a /etc/systemd/system/nodeapp.service",
       "echo 'ExecStart=/usr/bin/node /opt/webapp/server.js' | sudo tee -a /etc/systemd/system/nodeapp.service",
+      "echo 'EnvironmentFile=/opt/webapp/.env' | sudo tee -a /etc/systemd/system/nodeapp.service",
       "echo 'Restart=always' | sudo tee -a /etc/systemd/system/nodeapp.service",
       "echo '[Install]' | sudo tee -a /etc/systemd/system/nodeapp.service",
       "echo 'WantedBy=multi-user.target' | sudo tee -a /etc/systemd/system/nodeapp.service",
       "sudo systemctl daemon-reload",
       "sudo systemctl enable nodeapp"
+    ]
+  }
+
+  # Start CloudWatch Agent Service
+  provisioner "shell" {
+    inline = [
+      "sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json -s",
+      "sudo systemctl restart amazon-cloudwatch-agent"
     ]
   }
 }

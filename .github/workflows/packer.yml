@@ -5,7 +5,7 @@ on:
     types: [closed]
     branches:
       - main
-
+      - a06_test
 jobs:
   test_and_package:
     if: github.event.pull_request.merged == true
