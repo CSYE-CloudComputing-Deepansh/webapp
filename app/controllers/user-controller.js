@@ -135,6 +135,7 @@ const saveProfilePic = async (req, res) => {
     try {
         const user = req.user;
         const file = req.file;
+        console.log('File buffer:', file ? file.buffer : 'No file');
 
         if (!file) {
             recordMetric('api.saveProfilePic.failure');
@@ -142,13 +143,7 @@ const saveProfilePic = async (req, res) => {
         }
 
         // Save image metadata in the database
-        const imageMetadata = {
-            file_name: file.key,
-            url: file.location,
-            user_id: user.id
-        };
-
-        const imageRecord = await userService.saveImage(imageMetadata);
+        const imageRecord = await userService.saveImage(file);
         recordMetric('api.saveProfilePic.success');
         const duration = Date.now() - start;
         recordMetric('api.saveProfilePic.duration', duration, 'timing');
