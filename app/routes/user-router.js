@@ -23,10 +23,18 @@ userRouter
   .head((request,response) => {
     response.status(405).set('Cache-Control', 'no-cache').send();
   })
+  .all((request,response) => {
+    response.status(405).set('Cache-Control', 'no-cache').send();
+  });
+
+  userRouter
   .route("/self/pic")
   .get(basicAuth, userController.getProfilePic)
   .post(basicAuth, userController.saveProfilePic)
   .delete(basicAuth, userController.deleteProfilePic)
+  .head((request,response) => {
+    response.status(405).set('Cache-Control', 'no-cache').send();
+  })
   .all((request,response) => {
     response.status(405).set('Cache-Control', 'no-cache').send();
   });

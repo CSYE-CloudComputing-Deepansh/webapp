@@ -1,7 +1,7 @@
 const bcrypt = require('bcrypt');
 const userService = require("../services/user-service.js");
-const logger = require('../utils/logger');
-const recordMetric = require('../utils/statsd');
+const logger = require('../utility/logger');
+const recordMetric = require('../utility/statsd');
 
 // Save a new user
 const saveUser = async (req, res) => {
