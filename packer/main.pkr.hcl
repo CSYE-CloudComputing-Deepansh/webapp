@@ -67,7 +67,7 @@ build {
   # Install CloudWatch Agent
   provisioner "shell" {
     inline = [
-      "sudo yum install amazon-cloudwatch-agent -y"
+      "sudo apt-get install amazon-cloudwatch-agent -y"
     ]
   }
 
