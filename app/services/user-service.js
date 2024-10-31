@@ -1,4 +1,5 @@
 const Users = require('../Model/user-model.js').user;
+const Image = require('../Model/image-model.js').image;
 const bCrypt = require('bcrypt');
 
 
@@ -23,13 +24,24 @@ const findUser = async (email) => {
 }
 
 const verifyPassword = async (plainPassword, hashedPassword) => {
-    try{
+    try {
         const isMatch = await bCrypt.compare(plainPassword, hashedPassword);
         return isMatch;
     }
-    catch(error){
+    catch (error) {
         throw error;
     }
 }
 
-module.exports ={saveUser, verifyPassword, findUser}
+const saveImage = async (image) => {
+
+}
+
+const getImage = async (image) => {
+
+}
+
+const deleteImage = async (image) => {
+
+}
+module.exports = { saveUser, verifyPassword, findUser, saveImage, getImage, deleteImage }
