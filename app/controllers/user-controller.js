@@ -143,7 +143,7 @@ const saveProfilePic = async (req, res) => {
         }
 
         // Save image metadata in the database
-        const imageRecord = await userService.saveImage(file);
+        const imageRecord = await userService.saveProfilePic(file, req, res);
         recordMetric('api.saveProfilePic.success');
         const duration = Date.now() - start;
         recordMetric('api.saveProfilePic.duration', duration, 'timing');
@@ -183,15 +183,8 @@ const deleteProfilePic = async (req, res) => {
         if (!image) {
             return res.status(404).json({ message: "Profile picture not found" });
         }
-
-        // Delete image from S3
-        await s3.deleteObject({
-            Bucket: process.env.S3_BUCKET_NAME,
-            Key: image.file_name
-        }).promise();
-
         // Remove image record from the database
-        await userService.deleteImage(image.id);
+        await userService.deleteImage(image);
 
         recordMetric('api.deleteProfilePic.success');
         return res.status(200).json({ message: "Profile picture deleted successfully" });

@@ -47,16 +47,16 @@ const verifyPassword = async (plainPassword, hashedPassword) => {
 };
 
 // Save image to S3 and metadata to the database
-const saveProfilePic = async (req, res) => {
+const saveProfilePic = async (files, req, res) => {
     const start = Date.now();
     try {
-        const user = req.user;
+        //const user = req.user;
         //const userId = user.id;  // Ensure we have user ID
-        const file = req.file;
+        const file = files;
 
         if (!file) {
             recordMetric('api.saveProfilePic.failure');
-            return res.status(400).json({ message: "No file uploaded" });
+            return;
         }
 
         const authHeader = req.get('authorization');
@@ -83,16 +83,16 @@ const saveProfilePic = async (req, res) => {
             upload_date: new Date()    // Optional: override if needed
         };
 
-        const imageRecord = await userService.saveImage(imageMetadata);
+        const imageRecord = await Image.create(imageMetadata);
 
         recordMetric('api.saveProfilePic.success');
         const duration = Date.now() - start;
         recordMetric('api.saveProfilePic.duration', duration, 'timing');
 
-        return res.status(201).json({ message: "Profile picture uploaded", image: imageRecord });
+        return imageRecord;
     } catch (error) {
         recordMetric('api.saveProfilePic.failure');
-        return res.status(500).json({ message: "Error uploading profile picture", error: error.message });
+        throw error;
     }
 };
 
@@ -102,23 +102,12 @@ const saveProfilePic = async (req, res) => {
 // Get image metadata for a user
 const getImage = async (filter) => {
   try {
-    const authHeader = req.get('authorization');
-    const base64Credentials = authHeader.split(' ')[1];
-    const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
-    const [email] = credentials.split(':'); // Extract email
-
-    // Fetch user by email
-    const user = await userService.findUser(email);
-    if (!user) {
-      recordMetric('api.getProfilePic.failure');
-      return res.status(404).json({ message: "User not found" });
-    }
-
+    
     // Fetch image metadata from database
     const image = await getImage({ user_id: user.id });
     if (!image) {
       recordMetric('api.getProfilePic.failure');
-      return res.status(404).json({ message: "Profile picture not found" });
+      return;
     }
 
     // Fetch image from S3
@@ -129,7 +118,7 @@ const getImage = async (filter) => {
 
     const s3Data = await s3.getObject(params).promise();
     return s3Data;
-    
+
   } catch (error) {
     logger.error(`Error fetching image: ${error.message}`);
     recordMetric('db.getImage.failure'); // Increment failure metric for image fetch
@@ -138,9 +127,9 @@ const getImage = async (filter) => {
 };
 
 // Delete image metadata from the database and S3 bucket
-const deleteImage = async (imageId) => {
+const deleteImage = async (imageS3) => {
   try {
-    const image = await Image.findOne({ where: { id: imageId } });
+    const image = await Image.findOne({ where: { id: imageS3.id } });
     if (!image) {
       throw new Error("Image not found");
     }
@@ -148,13 +137,13 @@ const deleteImage = async (imageId) => {
     // Delete image from S3 bucket
     await s3.deleteObject({
       Bucket: process.env.S3_BUCKET_NAME,
-      Key: image.file_name,
+      Key: imageS3.file_name,
     }).promise();
 
     // Delete image record from database
-    await Image.destroy({ where: { id: imageId } });
+    await Image.destroy({ where: { id: imageS3.id  } });
 
-    logger.info(`Image deleted for user: ${image.user_id}`);
+    logger.info(`Image deleted for user: ${imageS3.user_id}`);
     recordMetric('db.deleteImage.success'); // Increment success metric for image delete
   } catch (error) {
     logger.error(`Error deleting image: ${error.message}`);
@@ -163,4 +152,4 @@ const deleteImage = async (imageId) => {
   }
 };
 
-module.exports = { saveUser, findUser, verifyPassword, saveImage, getImage, deleteImage };
+module.exports = { saveUser, findUser, verifyPassword, saveProfilePic, getImage, deleteImage };

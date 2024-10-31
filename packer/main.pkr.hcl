@@ -36,10 +36,10 @@ source "amazon-ebs" "ubuntu_ami" {
   region        = var.aws_region
   source_ami    = "ami-0866a3c8686eaeeba"
   instance_type = "t2.small"
-  ami_name      = "assignment4_ami_Deepansh_${formatdate("YYYY_MM_DD", timestamp())}"
+  ami_name      = "assignment6_ami_Deepansh_${formatdate("YYYY_MM_DD", timestamp())}"
   ssh_username  = "ubuntu"
   tags = {
-    Name        = "custom-ubuntu-24.04-node"
+    Name        = "assignmentCSYE"
     Environment = "dev"
   }
 }
