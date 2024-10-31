@@ -121,10 +121,10 @@ build {
   # Create environment variables file for application
   provisioner "shell" {
     inline = [
-      "echo 'DB_NAME=${DB_NAME}' | sudo tee -a /opt/webapp/.env",
-      "echo 'DB_USERNAME=${DB_USERNAME}' | sudo tee -a /opt/webapp/.env",
-      "echo 'DB_PASSWORD=${DB_PASSWORD}' | sudo tee -a /opt/webapp/.env",
-      "echo 'AWS_REGION=${aws_region}' | sudo tee -a /opt/webapp/.env"
+      "echo 'DB_NAME=${var.DB_NAME}' | sudo tee -a /opt/webapp/.env",
+      "echo 'DB_USERNAME=${var.DB_USERNAME}' | sudo tee -a /opt/webapp/.env",
+      "echo 'DB_PASSWORD=${var.DB_PASSWORD}' | sudo tee -a /opt/webapp/.env",
+      "echo 'AWS_REGION=${var.aws_region}' | sudo tee -a /opt/webapp/.env"
     ]
   }
 
