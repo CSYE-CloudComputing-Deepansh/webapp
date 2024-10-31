@@ -165,7 +165,9 @@ const getProfilePic = async (req, res) => {
             return res.status(404).json({ message: "Profile picture not found" });
         }
 
-        return res.status(200).json(image);
+        res.setHeader('Content-Type', image.ContentType);
+        res.status(200).send(image.Body);
+        return res;
     } catch (error) {
         recordMetric('api.getProfilePic.failure');
         return res.status(500).json({ message: "Error fetching profile picture", error: error.message });

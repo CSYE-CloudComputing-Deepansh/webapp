@@ -102,11 +102,34 @@ const saveProfilePic = async (req, res) => {
 // Get image metadata for a user
 const getImage = async (filter) => {
   try {
-    const image = await Image.findOne({ where: filter });
-    if (!image) {
-      logger.warn(`Image not found for filter: ${JSON.stringify(filter)}`);
+    const authHeader = req.get('authorization');
+    const base64Credentials = authHeader.split(' ')[1];
+    const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
+    const [email] = credentials.split(':'); // Extract email
+
+    // Fetch user by email
+    const user = await userService.findUser(email);
+    if (!user) {
+      recordMetric('api.getProfilePic.failure');
+      return res.status(404).json({ message: "User not found" });
     }
-    return image;
+
+    // Fetch image metadata from database
+    const image = await getImage({ user_id: user.id });
+    if (!image) {
+      recordMetric('api.getProfilePic.failure');
+      return res.status(404).json({ message: "Profile picture not found" });
+    }
+
+    // Fetch image from S3
+    const params = {
+      Bucket: process.env.S3_BUCKET_NAME,
+      Key: image.file_name
+    };
+
+    const s3Data = await s3.getObject(params).promise();
+    return s3Data;
+    
   } catch (error) {
     logger.error(`Error fetching image: ${error.message}`);
     recordMetric('db.getImage.failure'); // Increment failure metric for image fetch
