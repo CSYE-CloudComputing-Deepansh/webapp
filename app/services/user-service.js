@@ -124,6 +124,24 @@ const getImage = async (filter) => {
   }
 };
 
+
+const getImageForDelete = async (filter) => {
+    try {
+      // Fetch image metadata from database
+      const image = await Image.findOne({ where: {user_id: filter.user_id} });
+      if (!image) {
+        recordMetric('api.getProfilePic.failure');
+        return;
+      }
+
+      return image;
+  
+    } catch (error) {
+      logger.error(`Error fetching image: ${error.message}`);
+      recordMetric('db.getImage.failure'); // Increment failure metric for image fetch
+      throw error;
+    }
+  };
 // Delete image metadata from the database and S3 bucket
 const deleteImage = async (imageS3) => {
   try {
@@ -150,4 +168,4 @@ const deleteImage = async (imageS3) => {
   }
 };
 
-module.exports = { saveUser, findUser, verifyPassword, saveProfilePic, getImage, deleteImage };
+module.exports = { saveUser, findUser, verifyPassword, saveProfilePic, getImage, deleteImage, getImageForDelete };

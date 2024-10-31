@@ -178,7 +178,7 @@ const getProfilePic = async (req, res) => {
 const deleteProfilePic = async (req, res) => {
     try {
         const user = req.user;
-        const image = await userService.getImage({ user_id: user.id });
+        const image = await userService.getImageForDelete({ user_id: user.id });
 
         if (!image) {
             return res.status(404).json({ message: "Profile picture not found" });
