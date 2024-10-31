@@ -38,6 +38,7 @@ source "amazon-ebs" "ubuntu_ami" {
   instance_type = "t2.small"
   ami_name      = "assignment6_ami_Deepansh_${formatdate("YYYY_MM_DD", timestamp())}"
   ssh_username  = "ubuntu"
+  ami_users     = ["557690607498"]
   tags = {
     Name        = "assignmentCSYE"
     Environment = "dev"
