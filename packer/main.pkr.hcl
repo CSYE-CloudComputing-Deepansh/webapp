@@ -71,7 +71,7 @@ build {
       # Install the package
       "sudo dpkg -i amazon-cloudwatch-agent.deb",
       # Clean up the downloaded package
-      "rm amazon-cloudwatch-agent.deb
+      "rm amazon-cloudwatch-agent.deb"
     ]
   }
 
