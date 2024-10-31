@@ -5,6 +5,7 @@ const Users = require('../Model/user-model.js').user;
 const Image = require('../Model/image-model.js').image;
 const logger = require('../utility/logger.js');
 const recordMetric = require('../utility/statsd');
+const { getUser } = require('../controllers/user-controller.js');
 
 // Configure S3 client
 const s3 = new AWS.S3({
@@ -46,39 +47,57 @@ const verifyPassword = async (plainPassword, hashedPassword) => {
 };
 
 // Save image to S3 and metadata to the database
-const saveImage = async (file, userId) => {
-  try {
-    // Define S3 parameters for upload
-    const params = {
-      Bucket: process.env.S3_BUCKET_NAME,
-      Key: `${userId}/${Date.now()}_${file.originalname}`, // Create a unique key using user ID and timestamp
-      Body: file.buffer, // Assuming 'file' is coming from multer middleware
-      ContentType: file.mimetype,
-      ACL: 'public-read', // Define permissions as needed
-    };
+const saveProfilePic = async (req, res) => {
+    const start = Date.now();
+    try {
+        const user = req.user;
+        //const userId = user.id;  // Ensure we have user ID
+        const file = req.file;
 
-    // Upload image to S3
-    const s3Response = await s3.upload(params).promise();
-    const imageUrl = s3Response.Location;
+        if (!file) {
+            recordMetric('api.saveProfilePic.failure');
+            return res.status(400).json({ message: "No file uploaded" });
+        }
 
-    // Save image metadata in the database
-    const imageMetadata = {
-      file_name: params.Key,
-      url: imageUrl,
-      user_id: userId,
-    };
+        const authHeader = req.get('authorization');
+        const base64Credentials = authHeader.split(' ')[1];
+        const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
+        const [email, password] = credentials.split(':');
+        const userFind = await findUser(email);
+        // Construct S3 parameters and upload
+        const params = {
+            Bucket: process.env.S3_BUCKET_NAME,
+            Key: `${userFind.id}/${Date.now()}_${file.originalname}`,  // Unique key for each file
+            Body: file.buffer,
+            ContentType: file.mimetype
+        };
 
-    const image = await Image.create(imageMetadata);
-    logger.info(`Image saved to S3 for user: ${userId}`);
-    recordMetric('db.saveImage.success'); // Increment success metric for image save
+        const s3Response = await s3.upload(params).promise();
+        const imageUrl = s3Response.Location;
 
-    return image;
-  } catch (error) {
-    logger.error(`Error saving image: ${error.message}`);
-    recordMetric('db.saveImage.failure'); // Increment failure metric for image save
-    throw error;
-  }
+        // Save image metadata in the database
+        const imageMetadata = {
+            file_name: params.Key,     // Use S3 key as filename
+            url: imageUrl,             // URL of the uploaded image
+            user_id: userFind.id,           // Associate with the user's ID
+            upload_date: new Date()    // Optional: override if needed
+        };
+
+        const imageRecord = await userService.saveImage(imageMetadata);
+
+        recordMetric('api.saveProfilePic.success');
+        const duration = Date.now() - start;
+        recordMetric('api.saveProfilePic.duration', duration, 'timing');
+
+        return res.status(201).json({ message: "Profile picture uploaded", image: imageRecord });
+    } catch (error) {
+        recordMetric('api.saveProfilePic.failure');
+        return res.status(500).json({ message: "Error uploading profile picture", error: error.message });
+    }
 };
+
+
+
 
 // Get image metadata for a user
 const getImage = async (filter) => {
