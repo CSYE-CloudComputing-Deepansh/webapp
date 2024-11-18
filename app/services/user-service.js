@@ -168,4 +168,8 @@ const deleteImage = async (imageS3) => {
   }
 };
 
-module.exports = { saveUser, findUser, verifyPassword, saveProfilePic, getImage, deleteImage, getImageForDelete };
+const updateUserVerification = async (userId) => {
+  await Users.update({ is_verified: true }, { where: { id: userId } });
+};
+
+module.exports = { saveUser, findUser, verifyPassword, saveProfilePic, getImage, deleteImage, getImageForDelete, updateUserVerification };

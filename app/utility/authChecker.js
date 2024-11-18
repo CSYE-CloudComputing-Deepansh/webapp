@@ -40,4 +40,13 @@ const basicAuth = async (req, res, next) => {
     }
 };
 
-module.exports = { basicAuth };
+
+const verifyUserMiddleware = (req, res, next) => {
+    const user = req.user;
+    if (!user.is_verified) {
+        return res.status(403).json({ message: "User email not verified" });
+    }
+    next();
+}
+
+module.exports = { basicAuth, verifyUserMiddleware };
