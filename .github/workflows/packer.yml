@@ -119,6 +119,8 @@ jobs:
     
       - name: Update Launch Template with New AMI
         id: update_launch_template
+        env:
+          LAUNCH_TEMPLATE_ID: ${{ vars.LAUNCH_TEMPLATE_ID }}
         run: |
                   set -e  # Exit immediately if a command exits with a non-zero status
               
