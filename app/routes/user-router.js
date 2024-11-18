@@ -1,7 +1,7 @@
 const express = require("express");
 const userController = require("../controllers/user-controller.js");
 const user = require("../Model/user-model.js");
-const { basicAuth } = require("../utility/authChecker.js");
+const { basicAuth, verifyUserMiddleware } = require("../utility/authChecker.js");
 const upload = require("../utility/upload-config.js")
 
 
@@ -19,8 +19,8 @@ userRouter
 
   userRouter
   .route("/self")
-  .get(basicAuth, userController.getUser)
-  .put(basicAuth,userController.updateUser)
+  .get(basicAuth, verifyUserMiddleware, userController.getUser)
+  .put(basicAuth, verifyUserMiddleware, userController.updateUser)
   .head((request,response) => {
     response.status(405).set('Cache-Control', 'no-cache').send();
   })
@@ -31,9 +31,9 @@ userRouter
   try{
   userRouter
   .route("/self/pic")
-  .get(basicAuth, userController.getProfilePic)
-  .post(basicAuth, upload.single('file'), userController.saveProfilePic)
-  .delete(basicAuth, userController.deleteProfilePic)
+  .get(basicAuth, verifyUserMiddleware, userController.getProfilePic)
+  .post(basicAuth, verifyUserMiddleware, upload.single('file'), userController.saveProfilePic)
+  .delete(basicAuth, verifyUserMiddleware, userController.deleteProfilePic)
   .head((request,response) => {
     response.status(405).set('Cache-Control', 'no-cache').send();
   })
