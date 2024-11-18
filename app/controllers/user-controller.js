@@ -49,7 +49,7 @@ const saveUser = async (req, res) => {
 
         const user = await userService.saveUser(newUser);
         logger.info(`User created with email: ${user.email}`);
-        snsPublish.publishMessage(user.email, user.id);
+        //snsPublish.publishMessage(user.email, user.id);
 
         const messagePayload = {
             email: user.email,
