@@ -161,7 +161,7 @@ jobs:
                   echo "REFRESH_ID=$REFRESH_ID" >> $GITHUB_ENV
               
       - name: Wait for Instance Refresh to Complete
-         run: |
+        run: |
                   set -e
               
                   echo "Waiting for Instance Refresh to Complete"
