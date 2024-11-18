@@ -3,6 +3,7 @@ const userService = require("../services/user-service.js");
 const logger = require('../utility/logger');
 const recordMetric = require('../utility/statsd');
 const snsPublish = require('../utility/snsPublish.js');
+const { v4: uuidv4 } = require('uuid');
 
 // Save a new user
 const saveUser = async (req, res) => {
@@ -57,7 +58,7 @@ const saveUser = async (req, res) => {
         };
 
         await snsPublish.publishMessage(messagePayload);
-        
+
         // Record success metric and API call duration
         recordMetric('api.saveUser.success'); // Increment success count
         const duration = Date.now() - start;
