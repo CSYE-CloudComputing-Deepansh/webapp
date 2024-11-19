@@ -2,6 +2,8 @@ const bcrypt = require('bcrypt');
 const userService = require("../services/user-service.js");
 const logger = require('../utility/logger');
 const recordMetric = require('../utility/statsd');
+const snsPublish = require('../utility/snsPublish.js');
+const { v4: uuidv4 } = require('uuid');
 
 // Save a new user
 const saveUser = async (req, res) => {
@@ -31,6 +33,8 @@ const saveUser = async (req, res) => {
         }
 
         const encryptedPassword = bcrypt.hashSync(password, 10);
+        const verificationToken = uuidv4();
+        const tokenExpiry = new Date(Date.now() + 2 * 60 * 1000);
         const newUser = {
             first_name,
             last_name,
@@ -38,10 +42,22 @@ const saveUser = async (req, res) => {
             password: encryptedPassword,
             account_created: new Date(),
             account_updated: new Date(),
+            verification_token: verificationToken,
+            token_expiry: tokenExpiry,
+            is_verified: false
         };
 
         const user = await userService.saveUser(newUser);
         logger.info(`User created with email: ${user.email}`);
+        //snsPublish.publishMessage(user.email, user.id);
+
+        const messagePayload = {
+            email: user.email,
+            userId: user.id,
+            verificationToken: verificationToken
+        };
+
+        await snsPublish.publishMessage(messagePayload);
 
         // Record success metric and API call duration
         recordMetric('api.saveUser.success'); // Increment success count

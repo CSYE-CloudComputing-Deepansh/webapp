@@ -35,6 +35,17 @@ const findUser = async (email) => {
   }
 };
 
+//find user by id
+const findUserById = async (userID) => {
+  try {
+    const user = await Users.findOne({ where: { id: userID } });
+    return user;
+  } catch (error) {
+    logger.error(`Error finding user by email: ${error.message}`);
+    throw error;
+  }
+};
+
 // Verify password
 const verifyPassword = async (plainPassword, hashedPassword) => {
   try {
@@ -168,4 +179,8 @@ const deleteImage = async (imageS3) => {
   }
 };
 
-module.exports = { saveUser, findUser, verifyPassword, saveProfilePic, getImage, deleteImage, getImageForDelete };
+const updateUserVerification = async (userId) => {
+  await Users.update({ is_verified: true }, { where: { id: userId } });
+};
+
+module.exports = { saveUser, findUser, verifyPassword, saveProfilePic, getImage, deleteImage, getImageForDelete, updateUserVerification, findUserById };

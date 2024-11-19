@@ -1,9 +1,9 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../db.js');
 
- 
+
 const user = sequelize.define('users', {
-    id: {
+  id: {
     type: DataTypes.UUID,
     defaultValue: DataTypes.UUIDV4,
     primaryKey: true,
@@ -35,11 +35,23 @@ const user = sequelize.define('users', {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,
     allowNull: false
+  },
+  verification_token: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  token_expiry: {
+    type: DataTypes.DATE,
+    allowNull: true,
+  },
+  is_verified: {
+    type: DataTypes.BOOLEAN,
+    allowNull: true,
   }
 }, {
   timestamps: false, // Disable automatic `createdAt` and `updatedAt` fields,
   tableName: 'users'
 });
- 
-module.exports = {user};
- 
+
+module.exports = { user };
+
