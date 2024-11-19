@@ -36,7 +36,7 @@ source "amazon-ebs" "ubuntu_ami" {
   region        = var.aws_region
   source_ami    = "ami-0866a3c8686eaeeba"
   instance_type = "t2.small"
-  ami_name      = "assignment8_ami_Deepansh_${formatdate("YYYY_MM_DD_HH_MM_SS", timestamp())}"
+  ami_name      = "assignment8_ami_Deepansh_${formatdate("YYYY_MM_DD_HH_MM_ss", timestamp())}"
   ssh_username  = "ubuntu"
   ami_users     = ["557690607498"]
   tags = {
