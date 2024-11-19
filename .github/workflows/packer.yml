@@ -148,6 +148,8 @@ jobs:
               
       - name: Start Instance Refresh
         id: instance_refresh
+        env:
+          ASG_NAME: ${{ vars.ASG_NAME }}
         run: |
                   set -e
               
@@ -163,6 +165,8 @@ jobs:
                   echo "REFRESH_ID=$REFRESH_ID" >> $GITHUB_ENV
               
       - name: Wait for Instance Refresh to Complete
+        env:
+          ASG_NAME: ${{ vars.ASG_NAME }}
         run: |
                   set -e
               
