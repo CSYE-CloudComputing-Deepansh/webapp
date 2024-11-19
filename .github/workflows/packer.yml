@@ -148,9 +148,11 @@ jobs:
               
       - name: Start Instance Refresh
         id: instance_refresh
+        env:
+          ASG_NAME: ${{ vars.ASG_NAME }}
         run: |
                   set -e
-              
+                  echo "ASG_NAME: $ASG_NAME"
                   echo "Starting Instance Refresh for Auto Scaling Group: ${ASG_NAME}"
               
                   REFRESH_ID=$(aws autoscaling start-instance-refresh \
@@ -163,6 +165,8 @@ jobs:
                   echo "REFRESH_ID=$REFRESH_ID" >> $GITHUB_ENV
               
       - name: Wait for Instance Refresh to Complete
+        env:
+          ASG_NAME: ${{ vars.ASG_NAME }}
         run: |
                   set -e
               
