@@ -152,7 +152,7 @@ jobs:
           ASG_NAME: ${{ vars.ASG_NAME }}
         run: |
                   set -e
-              
+                  echo "ASG_NAME: $ASG_NAME"
                   echo "Starting Instance Refresh for Auto Scaling Group: ${ASG_NAME}"
               
                   REFRESH_ID=$(aws autoscaling start-instance-refresh \
