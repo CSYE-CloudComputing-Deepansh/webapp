@@ -6,6 +6,7 @@ const verifyRouter = require("./verify.js");
 module.exports =  (app) => {
   console.log("index.js - router")
     app.use('/healthz',healthzRouter)
+    app.use('/cicd',healthzRouter)
     app.use('/v1/user', userRouter)
     app.use('/verify', verifyRouter)
 }
