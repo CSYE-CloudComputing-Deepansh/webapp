@@ -96,7 +96,7 @@ build {
     "rm -rf awscliv2.zip aws/",
 
     # Verify AWS CLI installation
-    "/usr/local/bin/aws --version"
+    "/usr/local/bin/aws --version",
 
     "echo /usr/local/bin/aws --version"
   ]
