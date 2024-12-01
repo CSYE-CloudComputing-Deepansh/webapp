@@ -84,16 +84,24 @@ build {
     ]
   }
 
-  provisioner "shell" {
-    inline = [
-      # Installing AWS CLI
-      "curl -sSL \"https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip\" -o \"awscliv2.zip\"",
-      "unzip -q awscliv2.zip",
-      "sudo ./aws/install",
-      "rm -rf awscliv2.zip aws/",
-      "aws --version",
-    ]
-  }
+ provisioner "shell" {
+  inline = [
+    # Install unzip
+    "sudo apt-get update && sudo apt-get install -y unzip",
+
+    # Install AWS CLI
+    "curl -sSL \"https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip\" -o \"awscliv2.zip\"",
+    "unzip -q awscliv2.zip",
+    "sudo ./aws/install",
+    "rm -rf awscliv2.zip aws/",
+
+    # Verify AWS CLI installation
+    "/usr/local/bin/aws --version"
+
+    "echo /usr/local/bin/aws --version"
+  ]
+}
+
 
   # Create non-login user 'csye6225' with restricted shell
   provisioner "shell" {
