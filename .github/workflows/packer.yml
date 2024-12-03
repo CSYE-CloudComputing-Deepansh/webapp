@@ -1,15 +1,14 @@
 name: Build and Deploy Custom AMI
 
 on:
-  pull_request:
-    types: [closed]
+  push:
     branches:
       - main
       - a08
       - a08-demo
 jobs:
   test_and_package:
-    if: github.event.pull_request.merged == true
+    # if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
